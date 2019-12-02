@@ -3,6 +3,18 @@
 
 Declarative CLIs with ``argparse`` and ``dataclasses``.
 
+Features
+--------
+
+Features marked with a ✓ are currently implemented; features marked with a ⊘
+are not yet implemented.
+
+- [✓] Boolean flags
+- [✓] Integer, string, float, and other simple types as arguments
+- [✓] Default values
+- [⊘] Arguments with a finite set of choices
+- [⊘] Subcommands
+
 Examples
 --------
 
