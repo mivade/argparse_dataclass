@@ -14,6 +14,7 @@ are not yet implemented.
 - [✓] Default values
 - [⊘] Arguments with a finite set of choices
 - [⊘] Subcommands
+- [⊘] Mutually exclusive groups
 
 Examples
 --------

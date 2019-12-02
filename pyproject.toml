@@ -8,3 +8,7 @@ author = "Michael V. DePalatis"
 author-email = "mike@depalatis.net"
 home-page = "https://github.com/mivade/argparse_dataclass"
 classifiers = ["License :: OSI Approved :: MIT License"]
+requires-python = ">=3.6"
+requires = [
+    "dataclasses; python_version == '3.6'"
+]
