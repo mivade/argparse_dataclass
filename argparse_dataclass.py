@@ -2,8 +2,7 @@
 ``argparse_dataclass``
 ======================
 
-A simple module that allows for a more declarative approach to defining CLI
-options.
+Declarative CLIs with ``argparse`` and ``dataclasses``.
 
 Examples
 --------
