@@ -11,5 +11,5 @@ test:
 	python -m doctest argparse_dataclass.py
 
 .PHONY: build
-build:
+build: test readme
 	flit build
