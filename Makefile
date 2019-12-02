@@ -9,3 +9,7 @@ readme:
 .PHONY: test
 test:
 	python -m doctest argparse_dataclass.py
+
+.PHONY: build
+build:
+	flit build

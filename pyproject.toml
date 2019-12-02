@@ -1,0 +1,10 @@
+[build-system]
+requires = ["flit_core >=2,<3"]
+build-backend = "flit_core.buildapi"
+
+[tool.flit.metadata]
+module = "argparse_dataclass"
+author = "Michael V. DePalatis"
+author-email = "mike@depalatis.net"
+home-page = "https://github.com/mivade/argparse_dataclass"
+classifiers = ["License :: OSI Approved :: MIT License"]
