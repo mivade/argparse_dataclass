@@ -12,7 +12,7 @@ are not yet implemented.
 - [✓] Boolean flags
 - [✓] Integer, string, float, and other simple types as arguments
 - [✓] Default values
-- [⊘] Arguments with a finite set of choices
+- [✓] Arguments with a finite set of choices
 - [⊘] Subcommands
 - [⊘] Mutually exclusive groups
 
@@ -52,12 +52,27 @@ Using defaults:
     >>> print(parser.parse_args([]))
     Options(x=1, y=2, z=3.14)
 
+Enabling choices for an option:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     small_integer: int = field(metadata=dict(choices=[1, 2, 3]))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["--small-integer", "3"]))
+    Options(small_integer=3)
+
+
 License
 -------
 
 MIT License
 
-Copyright (c) 2019 Michael V. DePalatis
+Copyright (c) 2020 Michael V. DePalatis
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
