@@ -13,6 +13,7 @@ are not yet implemented.
 - [✓] Integer, string, float, and other simple types as arguments
 - [✓] Default values
 - [✓] Arguments with a finite set of choices
+- [✓] Positional arguments
 - [⊘] Subcommands
 - [⊘] Mutually exclusive groups
 
@@ -66,6 +67,20 @@ Enabling choices for an option:
     >>> print(parser.parse_args(["--small-integer", "3"]))
     Options(small_integer=3)
 
+To include positional arguments, set ``positional=True`` in the field metadata:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     optional: int
+    ...     required: int = field(metadata=dict(positional=True))
+    ...
+    >>> parser = ArgumentParser(Options, prog="cli")
+    >>> print(parser.parse_args(["--optional", "1", "2"]))
+    Options(optional=1, required=2)
 
 License
 -------

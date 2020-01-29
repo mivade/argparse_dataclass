@@ -14,6 +14,7 @@ are not yet implemented.
 - [✓] Integer, string, float, and other simple types as arguments
 - [✓] Default values
 - [✓] Arguments with a finite set of choices
+- [✓] Positional arguments
 - [⊘] Subcommands
 - [⊘] Mutually exclusive groups
 
@@ -67,6 +68,20 @@ Enabling choices for an option:
     >>> print(parser.parse_args(["--small-integer", "3"]))
     Options(small_integer=3)
 
+To include positional arguments, set ``positional=True`` in the field metadata:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     optional: int
+    ...     required: int = field(metadata=dict(positional=True))
+    ...
+    >>> parser = ArgumentParser(Options, prog="cli")
+    >>> print(parser.parse_args(["--optional", "1", "2"]))
+    Options(optional=1, required=2)
 
 License
 -------
@@ -126,7 +141,13 @@ class ArgumentParser(argparse.ArgumentParser):
             raise TypeError("cls must be a dataclass")
 
         for name, field in getattr(self._options_type, "__dataclass_fields__").items():
-            args = (f"--{name.replace('_', '-')}",)
+            positional = field.metadata.get("positional", False)
+
+            if positional:
+                args = (name.replace("_", "-"),)
+            else:
+                args = (f"--{name.replace('_', '-')}",)
+
             kwargs = {
                 "type": field.type,
                 "help": field.metadata.get("help", None),
@@ -135,7 +156,7 @@ class ArgumentParser(argparse.ArgumentParser):
             if field.metadata.get("choices") is not None:
                 kwargs["choices"] = field.metadata["choices"]
 
-            if field.default == field.default_factory == MISSING:
+            if (field.default == field.default_factory == MISSING) and not positional:
                 kwargs["required"] = True
             else:
                 if field.default_factory != MISSING:
