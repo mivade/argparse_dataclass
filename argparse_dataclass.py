@@ -114,7 +114,7 @@ import argparse
 from dataclasses import is_dataclass, MISSING
 from typing import TypeVar
 
-__version__ = "0.1.dev2"
+__version__ = "0.1.dev3"
 
 OptionsType = TypeVar("OptionsType")
 
