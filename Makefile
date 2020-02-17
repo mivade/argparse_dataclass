@@ -12,4 +12,4 @@ test:
 
 .PHONY: build
 build: test readme
-	flit build
+	python setup.py sdist
