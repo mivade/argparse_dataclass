@@ -67,6 +67,22 @@ Enabling choices for an option:
     >>> print(parser.parse_args(["--small-integer", "3"]))
     Options(small_integer=3)
 
+Using different flag names and positional arguments:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     x: int = field(metadata=dict(args=["-x", "--long-name"]))
+    ...     positional: str = field(metadata=dict(args=["positional"]))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["-x", "0", "positional"]))
+    Options(x=0, positional=positional)
+    >>> print(parser.parse_args(["--long-name", 0, "positional"]))
+    Options(x=0, positional=positional)
 
 License
 -------
@@ -99,7 +115,7 @@ import argparse
 from dataclasses import is_dataclass, MISSING
 from typing import TypeVar
 
-__version__ = "0.1.dev2"
+__version__ = "0.1.dev3"
 
 OptionsType = TypeVar("OptionsType")
 
@@ -126,16 +142,22 @@ class ArgumentParser(argparse.ArgumentParser):
             raise TypeError("cls must be a dataclass")
 
         for name, field in getattr(self._options_type, "__dataclass_fields__").items():
-            args = (f"--{name.replace('_', '-')}",)
+            args = field.metadata.get("args", [f"--{name.replace('_', '-')}"])
+            positional = not args[0].startswith("-")
             kwargs = {
                 "type": field.type,
                 "help": field.metadata.get("help", None),
             }
 
+            if field.metadata.get("args"):
+                # We want to ensure that we store the argument basd on the
+                # name of the field and not whatever flag name was provided
+                kwargs["dest"] = field.name
+
             if field.metadata.get("choices") is not None:
                 kwargs["choices"] = field.metadata["choices"]
 
-            if field.default == field.default_factory == MISSING:
+            if field.default == field.default_factory == MISSING and not positional:
                 kwargs["required"] = True
             else:
                 if field.default_factory != MISSING:
