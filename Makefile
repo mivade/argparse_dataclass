@@ -2,6 +2,13 @@
 all:
 	@echo "Please choose a target"
 
+.PHONY: clean
+clean:
+	rm -rf dist
+	rm -rf build
+	rm -rf .tox
+	rm -rf *.egg-info
+
 .PHONY: readme
 readme:
 	python -c "import argparse_dataclass; print(argparse_dataclass.__doc__.strip())" > README.rst
