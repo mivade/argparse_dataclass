@@ -7,6 +7,9 @@ Declarative CLIs with ``argparse`` and ``dataclasses``.
 .. image:: https://travis-ci.org/mivade/argparse_dataclass.svg?branch=master
     :target: https://travis-ci.org/mivade/argparse_dataclass
 
+.. image:: https://img.shields.io/pypi/v/argparse_dataclass
+    :alt: PyPI
+
 Features
 --------
 
@@ -120,7 +123,7 @@ from contextlib import suppress
 from dataclasses import is_dataclass, MISSING
 from typing import TypeVar
 
-__version__ = "0.1.dev3"
+__version__ = "0.1.0"
 
 OptionsType = TypeVar("OptionsType")
 
