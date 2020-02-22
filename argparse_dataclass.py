@@ -4,6 +4,9 @@
 
 Declarative CLIs with ``argparse`` and ``dataclasses``.
 
+.. image:: https://travis-ci.org/mivade/argparse_dataclass.svg?branch=master
+    :target: https://travis-ci.org/mivade/argparse_dataclass
+
 Features
 --------
 
