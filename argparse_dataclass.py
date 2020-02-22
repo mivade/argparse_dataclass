@@ -120,7 +120,7 @@ from contextlib import suppress
 from dataclasses import is_dataclass, MISSING
 from typing import TypeVar
 
-__version__ = "0.1.dev3"
+__version__ = "0.1.0"
 
 OptionsType = TypeVar("OptionsType")
 
