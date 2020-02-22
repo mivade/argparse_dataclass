@@ -80,9 +80,9 @@ Using different flag names and positional arguments:
     ...
     >>> parser = ArgumentParser(Options)
     >>> print(parser.parse_args(["-x", "0", "positional"]))
-    Options(x=0, positional=positional)
+    Options(x=0, positional='positional')
     >>> print(parser.parse_args(["--long-name", 0, "positional"]))
-    Options(x=0, positional=positional)
+    Options(x=0, positional='positional')
 
 License
 -------
