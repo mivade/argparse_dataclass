@@ -12,6 +12,7 @@ Features
 Features marked with a ✓ are currently implemented; features marked with a ⊘
 are not yet implemented.
 
+- [✓] Positional arguments
 - [✓] Boolean flags
 - [✓] Integer, string, float, and other simple types as arguments
 - [✓] Default values
