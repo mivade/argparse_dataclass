@@ -13,3 +13,7 @@ test:
 .PHONY: build
 build: test readme
 	python setup.py sdist
+
+.PHONY: black
+black:
+	black *.py

@@ -3,12 +3,16 @@
 
 Declarative CLIs with ``argparse`` and ``dataclasses``.
 
+.. image:: https://travis-ci.org/mivade/argparse_dataclass.svg?branch=master
+    :target: https://travis-ci.org/mivade/argparse_dataclass
+
 Features
 --------
 
 Features marked with a ✓ are currently implemented; features marked with a ⊘
 are not yet implemented.
 
+- [✓] Positional arguments
 - [✓] Boolean flags
 - [✓] Integer, string, float, and other simple types as arguments
 - [✓] Default values
@@ -66,6 +70,22 @@ Enabling choices for an option:
     >>> print(parser.parse_args(["--small-integer", "3"]))
     Options(small_integer=3)
 
+Using different flag names and positional arguments:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     x: int = field(metadata=dict(args=["-x", "--long-name"]))
+    ...     positional: str = field(metadata=dict(args=["positional"]))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["-x", "0", "positional"]))
+    Options(x=0, positional='positional')
+    >>> print(parser.parse_args(["--long-name", 0, "positional"]))
+    Options(x=0, positional='positional')
 
 License
 -------
