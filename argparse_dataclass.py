@@ -112,6 +112,7 @@ SOFTWARE.
 """
 
 import argparse
+from contextlib import suppress
 from dataclasses import is_dataclass, MISSING
 from typing import TypeVar
 
@@ -149,8 +150,8 @@ class ArgumentParser(argparse.ArgumentParser):
                 "help": field.metadata.get("help", None),
             }
 
-            if field.metadata.get("args"):
-                # We want to ensure that we store the argument basd on the
+            if field.metadata.get("args") and not positional:
+                # We want to ensure that we store the argument based on the
                 # name of the field and not whatever flag name was provided
                 kwargs["dest"] = field.name
 
@@ -166,9 +167,11 @@ class ArgumentParser(argparse.ArgumentParser):
                     kwargs["default"] = field.default
 
             if field.type is bool:
-                kwargs.pop("type")
-                kwargs.pop("required")
                 kwargs["action"] = "store_true"
+
+                for key in ("type", "required"):
+                    with suppress(KeyError):
+                        kwargs.pop(key)
 
             self.add_argument(*args, **kwargs)
 
