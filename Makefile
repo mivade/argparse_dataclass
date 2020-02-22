@@ -24,3 +24,7 @@ build: test readme
 .PHONY: black
 black:
 	black *.py
+
+.PHONY: publish
+publish: clean readme build
+	twine upload dist/*
