@@ -26,6 +26,26 @@ are not yet implemented.
 
 Examples
 --------
+Using dataclass decorator
+
+.. code-block:: pycon
+
+    from argparse_dataclass import dataclass
+
+
+    @dataclass
+    class Opt:
+        x: int = 42
+        y: bool = False
+
+
+    def main():
+        params = Opt.parse_args()
+        print(params)
+
+
+    if __name__ == "__main__":
+        main()
 
 A simple parser with flags:
 
@@ -120,7 +140,7 @@ SOFTWARE.
 
 import argparse
 from contextlib import suppress
-from dataclasses import is_dataclass, MISSING
+from dataclasses import is_dataclass, MISSING, dataclass as real_dataclass
 from typing import TypeVar
 
 __version__ = "0.1.0"
@@ -152,10 +172,7 @@ class ArgumentParser(argparse.ArgumentParser):
         for name, field in getattr(self._options_type, "__dataclass_fields__").items():
             args = field.metadata.get("args", [f"--{name.replace('_', '-')}"])
             positional = not args[0].startswith("-")
-            kwargs = {
-                "type": field.type,
-                "help": field.metadata.get("help", None),
-            }
+            kwargs = {"type": field.type, "help": field.metadata.get("help", None)}
 
             if field.metadata.get("args") and not positional:
                 # We want to ensure that we store the argument based on the
@@ -186,3 +203,25 @@ class ArgumentParser(argparse.ArgumentParser):
         """Parse arguments and return as the dataclass type."""
         namespace = super().parse_args(*args, **kwargs)
         return self._options_type(**vars(namespace))
+
+
+def dataclass(cls=None, /, *, init=True, repr=True, eq=True, order=False,
+              unsafe_hash=False, frozen=False):
+    class Inner:
+        parser = ArgumentParser(
+            real_dataclass(
+                cls,
+                init=int,
+                repr=repr,
+                eq=eq,
+                order=order,
+                unsafe_hash=unsafe_hash,
+                frozen=frozen,
+            )
+        )
+
+        @staticmethod
+        def parse_args(args=None):
+            return Inner.parser.parse_args(args)
+
+    return Inner
