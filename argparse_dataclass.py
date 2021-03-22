@@ -182,6 +182,9 @@ class ArgumentParser(argparse.ArgumentParser):
             if field.metadata.get("choices") is not None:
                 kwargs["choices"] = field.metadata["choices"]
 
+            if field.metadata.get("nargs") is not None:
+                kwargs["nargs"] = field.metadata["nargs"]
+
             if field.default == field.default_factory == MISSING and not positional:
                 kwargs["required"] = True
             else:
