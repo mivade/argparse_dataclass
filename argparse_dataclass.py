@@ -184,6 +184,12 @@ class ArgumentParser(argparse.ArgumentParser):
 
             if field.metadata.get("nargs") is not None:
                 kwargs["nargs"] = field.metadata["nargs"]
+                if field.metadata.get("type") is None:
+                    # When nargs is specified, field.type should be a list,
+                    # or something equivalent, like typing.List.
+                    # Using it would most likely result in an error, so the user
+                    # should specify the type of the elements within the list
+                    raise ValueError("A type must be specified along with nargs")
 
             if field.default == field.default_factory == MISSING and not positional:
                 kwargs["required"] = True
