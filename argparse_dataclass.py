@@ -172,7 +172,7 @@ class ArgumentParser(argparse.ArgumentParser):
         for name, field in getattr(self._options_type, "__dataclass_fields__").items():
             args = field.metadata.get("args", [f"--{name.replace('_', '-')}"])
             positional = not args[0].startswith("-")
-            kwargs = {"type": field.type, "help": field.metadata.get("help", None)}
+            kwargs = {"type": field.metadata.get("type", field.type), "help": field.metadata.get("help", None)}
 
             if field.metadata.get("args") and not positional:
                 # We want to ensure that we store the argument based on the
