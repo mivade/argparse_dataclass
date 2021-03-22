@@ -111,6 +111,20 @@ Using different flag names and positional arguments:
     >>> print(parser.parse_args(["--long-name", 0, "positional"]))
     Options(x=0, positional='positional')
 
+Using a custom type converter:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     name: str = field(metadata=dict(type=str.title))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["--name", "john doe"]))
+    Options(name='John Doe')
+
 License
 -------
 
