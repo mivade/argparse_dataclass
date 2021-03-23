@@ -155,7 +155,7 @@ SOFTWARE.
 import argparse
 from contextlib import suppress
 from dataclasses import is_dataclass, MISSING, dataclass as real_dataclass
-from typing import TypeVar
+from typing import TypeVar, get_args
 
 __version__ = "0.1.0"
 
@@ -195,6 +195,23 @@ class ArgumentParser(argparse.ArgumentParser):
 
             if field.metadata.get("choices") is not None:
                 kwargs["choices"] = field.metadata["choices"]
+
+            if field.metadata.get("nargs") is not None:
+                kwargs["nargs"] = field.metadata["nargs"]
+                if field.metadata.get("type") is None:
+                    # When nargs is specified, field.type should be a list,
+                    # or something equivalent, like typing.List.
+                    # Using it would most likely result in an error, so if the user
+                    # did not specify the type of the elements within the list, we
+                    # try to infer it:
+                    try:
+                        kwargs["type"] = get_args(field.type)[0]  # get_args returns a tuple
+                    except IndexError:
+                        # get_args returned an empty tuple, type cannot be inferred
+                        raise ValueError(f"Cannot infer type of items in field: {name}. "
+                                         "Try using a parameterized type hint, or "
+                                         "specifying the type explicitly using "
+                                         "metadata['type']")
 
             if field.default == field.default_factory == MISSING and not positional:
                 kwargs["required"] = True
