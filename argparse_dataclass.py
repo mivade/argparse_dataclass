@@ -238,21 +238,23 @@ class ArgumentParser(argparse.ArgumentParser):
 
 def dataclass(cls=None, /, *, init=True, repr=True, eq=True, order=False,
               unsafe_hash=False, frozen=False):
-    class Inner:
-        parser = ArgumentParser(
-            real_dataclass(
-                cls,
-                init=init,
-                repr=repr,
-                eq=eq,
-                order=order,
-                unsafe_hash=unsafe_hash,
-                frozen=frozen,
-            )
+    def wrap(cls):
+        cls = real_dataclass(
+            cls,
+            init=init,
+            repr=repr,
+            eq=eq,
+            order=order,
+            unsafe_hash=unsafe_hash,
+            frozen=frozen,
         )
+        cls.parse_args = staticmethod(ArgumentParser(cls).parse_args)
+        return cls
 
-        @staticmethod
-        def parse_args(args=None):
-            return Inner.parser.parse_args(args)
+    # See if we're being called as @dataclass or @dataclass().
+    if cls is None:
+        # We're called with parens.
+        return wrap
 
-    return Inner
+    # We're called as @dataclass without parens.
+    return wrap(cls)
