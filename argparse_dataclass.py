@@ -30,22 +30,14 @@ Using dataclass decorator
 
 .. code-block:: pycon
 
-    from argparse_dataclass import dataclass
-
-
-    @dataclass
-    class Opt:
-        x: int = 42
-        y: bool = False
-
-
-    def main():
-        params = Opt.parse_args()
-        print(params)
-
-
-    if __name__ == "__main__":
-        main()
+    >>> from argparse_dataclass import dataclass
+    >>> @dataclass
+    ... class Options:
+    ...     x: int = 42
+    ...     y: bool = False
+    ...
+    >>> print(Options.parse_args(['--y']))
+    Options(x=42, y=True)
 
 A simple parser with flags:
 
