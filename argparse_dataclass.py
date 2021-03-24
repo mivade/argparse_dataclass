@@ -242,7 +242,7 @@ def dataclass(cls=None, /, *, init=True, repr=True, eq=True, order=False,
         parser = ArgumentParser(
             real_dataclass(
                 cls,
-                init=int,
+                init=init,
                 repr=repr,
                 eq=eq,
                 order=order,
