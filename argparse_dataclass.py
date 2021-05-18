@@ -146,37 +146,27 @@ SOFTWARE.
 
 import argparse
 from contextlib import suppress
-from dataclasses import is_dataclass, MISSING, dataclass as real_dataclass
+from dataclasses import is_dataclass, fields, MISSING, dataclass as real_dataclass
 from typing import TypeVar, get_args, Generic, Type
 
 __version__ = "0.1.0"
 
 OptionsType = TypeVar("OptionsType")
 
+def parse_args(options_class: Type[OptionsType], *args, **kwargs) -> OptionsType:
+        """Parse arguments and return as the dataclass type."""
+        parser = argparse.ArgumentParser()
+        _add_dataclass_options(options_class, parser)
+        namespace = parser.parse_args(*args, **kwargs)
+        return options_class(**vars(namespace))
 
-class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
-    """Command line argument parser that derives its options from a dataclass.
 
-    Parameters
-    ----------
-    options_class
-        The dataclass that defines the options.
-    args, kwargs
-        Passed along to :class:`argparse.ArgumentParser`.
-
-    """
-
-    def __init__(self, options_class: Type[OptionsType], *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._options_type: Type[OptionsType] = options_class
-        self._add_dataclass_options()
-
-    def _add_dataclass_options(self) -> None:
-        if not is_dataclass(self._options_type):
+def _add_dataclass_options(options_class: Type[OptionsType], parser: argparse.ArgumentParser) -> None:
+        if not is_dataclass(options_class):
             raise TypeError("cls must be a dataclass")
-
-        for name, field in getattr(self._options_type, "__dataclass_fields__").items():
-            args = field.metadata.get("args", [f"--{name.replace('_', '-')}"])
+        
+        for field in fields(options_class):
+            args = field.metadata.get("args", [f"--{field.name.replace('_', '-')}"])
             positional = not args[0].startswith("-")
             kwargs = {"type": field.metadata.get("type", field.type), "help": field.metadata.get("help", None)}
 
@@ -200,7 +190,7 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
                         kwargs["type"] = get_args(field.type)[0]  # get_args returns a tuple
                     except IndexError:
                         # get_args returned an empty tuple, type cannot be inferred
-                        raise ValueError(f"Cannot infer type of items in field: {name}. "
+                        raise ValueError(f"Cannot infer type of items in field: {field.name}. "
                                          "Try using a parameterized type hint, or "
                                          "specifying the type explicitly using "
                                          "metadata['type']")
@@ -220,7 +210,27 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
                     with suppress(KeyError):
                         kwargs.pop(key)
 
-            self.add_argument(*args, **kwargs)
+            parser.add_argument(*args, **kwargs)
+
+
+class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
+    """Command line argument parser that derives its options from a dataclass.
+
+    Parameters
+    ----------
+    options_class
+        The dataclass that defines the options.
+    args, kwargs
+        Passed along to :class:`argparse.ArgumentParser`.
+
+    """
+
+    def __init__(self, options_class: Type[OptionsType], *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._options_type: Type[OptionsType] = options_class
+        _add_dataclass_options(options_class, self)
+
+    
 
     def parse_args(self, *args, **kwargs) -> OptionsType:
         """Parse arguments and return as the dataclass type."""
