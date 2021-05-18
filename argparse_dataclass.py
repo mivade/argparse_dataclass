@@ -147,14 +147,14 @@ SOFTWARE.
 import argparse
 from contextlib import suppress
 from dataclasses import is_dataclass, MISSING, dataclass as real_dataclass
-from typing import TypeVar, get_args
+from typing import TypeVar, get_args, Generic, Type
 
 __version__ = "0.1.0"
 
 OptionsType = TypeVar("OptionsType")
 
 
-class ArgumentParser(argparse.ArgumentParser):
+class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
     """Command line argument parser that derives its options from a dataclass.
 
     Parameters
@@ -166,9 +166,9 @@ class ArgumentParser(argparse.ArgumentParser):
 
     """
 
-    def __init__(self, options_class: OptionsType, *args, **kwargs):
+    def __init__(self, options_class: Type[OptionsType], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._options_type: OptionsType = options_class
+        self._options_type: Type[OptionsType] = options_class
         self._add_dataclass_options()
 
     def _add_dataclass_options(self) -> None:
