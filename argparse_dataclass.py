@@ -238,7 +238,7 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
         return self._options_type(**vars(namespace))
 
 
-def dataclass(cls=None, /, *, init=True, repr=True, eq=True, order=False,
+def dataclass(cls=None, *, init=True, repr=True, eq=True, order=False,
               unsafe_hash=False, frozen=False):
     def wrap(cls):
         cls = real_dataclass(
