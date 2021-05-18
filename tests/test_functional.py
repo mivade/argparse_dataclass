@@ -1,6 +1,9 @@
 import sys
 import unittest
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from typing import List
+
 from argparse_dataclass import parse_args
 
 
@@ -67,6 +70,40 @@ class ArgumentParserTests(unittest.TestCase):
             parse_args(Args, [])
             self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
 
+
+    def test_nargs(self): 
+        @dataclass
+        class Args:
+            name: str
+            friends: List[str] = field(metadata=dict(nargs=2))
+
+        params = parse_args(Args, ["--name", "Sam", "--friends", "pippin", "Frodo"])
+        self.assertEqual("Sam", params.name)
+        self.assertEqual([ "pippin", "Frodo"], params.friends)
+
+    def test_nargs_plus(self): 
+        @dataclass
+        class Args:
+            name: str
+            friends: List[str] = field(metadata=dict(nargs="+"))
+
+        args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
+        params = parse_args(Args, args)
+        self.assertEqual("Sam", params.name)
+        self.assertEqual(["pippin", "Frodo"], params.friends)
+        
+        args += ["Bilbo"]
+        params = parse_args(Args, args)
+        self.assertEqual("Sam", params.name)
+        self.assertEqual(["pippin", "Frodo", "Bilbo"], params.friends)
+
+
+    def test_nargs_negative(self):
+        @dataclass
+        class Args:
+            name: str
+            friends: list = field(metadata=dict(nargs=2))
+        self.assertRaises(ValueError, parse_args, Args, ["--name", "Sam", "--friends", "pippin", "Frodo"])
 
 if __name__ == "__main__":
     unittest.main()

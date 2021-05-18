@@ -143,11 +143,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
-
+import sys
 import argparse
 from contextlib import suppress
 from dataclasses import is_dataclass, fields, MISSING, dataclass as real_dataclass
-from typing import TypeVar, get_args, Generic, Type
+from typing import TypeVar, Generic, Type
+
+if sys.version_info[1] >= 8:
+    # get_args was added in Python 3.8
+    from typing import get_args
+else:
+    def get_args(f: Type) -> tuple:
+        return getattr(f, "__args__", tuple())
+
 
 __version__ = "0.1.0"
 
