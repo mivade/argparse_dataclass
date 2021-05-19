@@ -158,7 +158,7 @@ else:
         return getattr(f, "__args__", tuple())
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 OptionsType = TypeVar("OptionsType")
 
