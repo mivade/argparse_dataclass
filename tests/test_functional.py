@@ -1,5 +1,6 @@
 import sys
 import unittest
+import datetime as dt
 from dataclasses import dataclass, field
 
 from typing import List
@@ -28,7 +29,7 @@ class NegativeTestHelper:
         sys.exit = self._sys_exit
 
 
-class ArgumentParserTests(unittest.TestCase):
+class FunctionalParserTests(unittest.TestCase):
     def test_basic(self):
         @dataclass
         class Opt:
@@ -81,6 +82,7 @@ class ArgumentParserTests(unittest.TestCase):
         self.assertEqual("Sam", params.name)
         self.assertEqual([ "pippin", "Frodo"], params.friends)
 
+
     def test_nargs_plus(self): 
         @dataclass
         class Args:
@@ -105,5 +107,70 @@ class ArgumentParserTests(unittest.TestCase):
             friends: list = field(metadata=dict(nargs=2))
         self.assertRaises(ValueError, parse_args, Args, ["--name", "Sam", "--friends", "pippin", "Frodo"])
 
+    
+    def test_positional(self):
+        @dataclass
+        class Options:
+            x: int = field(metadata=dict(args=["-x", "--long-name"]))
+            positional: str = field(metadata=dict(args=["positional"]))
+
+        params = parse_args(Options, ["-x", "0", "POS_VALUE"])
+        self.assertEqual(params.x, 0)
+        self.assertEqual(params.positional, "POS_VALUE")
+
+
+    def test_choices(self):
+        @dataclass
+        class Options:
+            small_integer: int = field(metadata=dict(choices=[1, 2, 3]))
+
+        params = parse_args(Options, ["--small-integer", "2"])
+        self.assertEqual(params.small_integer, 2)
+
+        
+    def test_choices_negative(self):
+        @dataclass
+        class Options:
+            small_integer: int = field(metadata=dict(choices=[1, 2, 3]))
+
+        with NegativeTestHelper() as helper:
+            parse_args(Options, ["--small-integer", "20"])
+            self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+
+
+    def test_type(self):
+        @dataclass
+        class Options:
+            name: str = field(metadata=dict(type=str.title))
+        params = parse_args(Options, ["--name", "john doe"])
+        self.assertEqual(params.name, "John Doe")
+
+    
+    def test_default_factory(self):
+        get_date = lambda: dt.datetime.now().isoformat()
+
+        @dataclass
+        class Parameters:
+            cutoff_date: dt.datetime = field(default_factory=get_date, metadata=dict(type=dt.datetime.fromisoformat))
+
+        s_time  = dt.datetime.now()
+        params = parse_args(Parameters, [])
+        e_time  = dt.datetime.now()
+        self.assertGreaterEqual(params.cutoff_date, s_time)
+        self.assertLessEqual(params.cutoff_date, e_time)
+        
+        s_time  = dt.datetime.now()
+        params = parse_args(Parameters, [])
+        e_time  = dt.datetime.now()
+        self.assertGreaterEqual(params.cutoff_date, s_time)
+        self.assertLessEqual(params.cutoff_date, e_time)
+
+        date = dt.datetime(2000, 1, 1)
+        params = parse_args(Parameters, ["--cutoff-date", date.isoformat()])
+        self.assertEqual(params.cutoff_date, date)
+
 if __name__ == "__main__":
     unittest.main()
+
+
+    
