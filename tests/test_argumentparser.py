@@ -147,6 +147,7 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Options).parse_args(["--name", "john doe"])
         self.assertEqual(params.name, "John Doe")
 
+    @unittest.skipIf(sys.version_info[:2] == (3, 6), "Python 3.6 does not have datetime.fromisoformat()")
     def test_default_factory(self):
         get_date = lambda: dt.datetime.now().isoformat()
 
