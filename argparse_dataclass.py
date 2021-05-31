@@ -122,7 +122,7 @@ License
 
 MIT License
 
-Copyright (c) 2020 Michael V. DePalatis
+Copyright (c) 2021 Michael V. DePalatis and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -158,7 +158,7 @@ else:
         return getattr(f, "__args__", tuple())
 
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 OptionsType = TypeVar("OptionsType")
 
