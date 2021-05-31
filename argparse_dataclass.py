@@ -143,15 +143,91 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
-
+import sys
 import argparse
 from contextlib import suppress
-from dataclasses import is_dataclass, MISSING, dataclass as real_dataclass
-from typing import TypeVar, get_args, Generic, Type
+from dataclasses import is_dataclass, fields, MISSING, dataclass as real_dataclass
+from typing import TypeVar, Generic, Type
 
-__version__ = "0.1.0"
+if sys.version_info[1] >= 8:
+    # get_args was added in Python 3.8
+    from typing import get_args
+else:
+
+    def get_args(f: Type) -> tuple:
+        return getattr(f, "__args__", tuple())
+
+
+__version__ = "0.1.1"
 
 OptionsType = TypeVar("OptionsType")
+
+
+def parse_args(options_class: Type[OptionsType], *args, **kwargs) -> OptionsType:
+    """Parse arguments and return as the dataclass type."""
+    parser = argparse.ArgumentParser()
+    _add_dataclass_options(options_class, parser)
+    namespace = parser.parse_args(*args, **kwargs)
+    return options_class(**vars(namespace))
+
+
+def _add_dataclass_options(
+    options_class: Type[OptionsType], parser: argparse.ArgumentParser
+) -> None:
+    if not is_dataclass(options_class):
+        raise TypeError("cls must be a dataclass")
+
+    for field in fields(options_class):
+        args = field.metadata.get("args", [f"--{field.name.replace('_', '-')}"])
+        positional = not args[0].startswith("-")
+        kwargs = {
+            "type": field.metadata.get("type", field.type),
+            "help": field.metadata.get("help", None),
+        }
+
+        if field.metadata.get("args") and not positional:
+            # We want to ensure that we store the argument based on the
+            # name of the field and not whatever flag name was provided
+            kwargs["dest"] = field.name
+
+        if field.metadata.get("choices") is not None:
+            kwargs["choices"] = field.metadata["choices"]
+
+        if field.metadata.get("nargs") is not None:
+            kwargs["nargs"] = field.metadata["nargs"]
+            if field.metadata.get("type") is None:
+                # When nargs is specified, field.type should be a list,
+                # or something equivalent, like typing.List.
+                # Using it would most likely result in an error, so if the user
+                # did not specify the type of the elements within the list, we
+                # try to infer it:
+                try:
+                    kwargs["type"] = get_args(field.type)[0]  # get_args returns a tuple
+                except IndexError:
+                    # get_args returned an empty tuple, type cannot be inferred
+                    raise ValueError(
+                        f"Cannot infer type of items in field: {field.name}. "
+                        "Try using a parameterized type hint, or "
+                        "specifying the type explicitly using "
+                        "metadata['type']"
+                    )
+
+        if field.default == field.default_factory == MISSING and not positional:
+            kwargs["required"] = True
+        else:
+            if field.default_factory != MISSING:
+                kwargs["default"] = field.default_factory()
+            else:
+                kwargs["default"] = field.default
+
+        if field.type is bool:
+            kwargs["action"] = "store_true"
+
+            for key in ("type", "required"):
+                with suppress(KeyError):
+                    kwargs.pop(key)
+
+        parser.add_argument(*args, **kwargs)
 
 
 class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
@@ -169,58 +245,7 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
     def __init__(self, options_class: Type[OptionsType], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._options_type: Type[OptionsType] = options_class
-        self._add_dataclass_options()
-
-    def _add_dataclass_options(self) -> None:
-        if not is_dataclass(self._options_type):
-            raise TypeError("cls must be a dataclass")
-
-        for name, field in getattr(self._options_type, "__dataclass_fields__").items():
-            args = field.metadata.get("args", [f"--{name.replace('_', '-')}"])
-            positional = not args[0].startswith("-")
-            kwargs = {"type": field.metadata.get("type", field.type), "help": field.metadata.get("help", None)}
-
-            if field.metadata.get("args") and not positional:
-                # We want to ensure that we store the argument based on the
-                # name of the field and not whatever flag name was provided
-                kwargs["dest"] = field.name
-
-            if field.metadata.get("choices") is not None:
-                kwargs["choices"] = field.metadata["choices"]
-
-            if field.metadata.get("nargs") is not None:
-                kwargs["nargs"] = field.metadata["nargs"]
-                if field.metadata.get("type") is None:
-                    # When nargs is specified, field.type should be a list,
-                    # or something equivalent, like typing.List.
-                    # Using it would most likely result in an error, so if the user
-                    # did not specify the type of the elements within the list, we
-                    # try to infer it:
-                    try:
-                        kwargs["type"] = get_args(field.type)[0]  # get_args returns a tuple
-                    except IndexError:
-                        # get_args returned an empty tuple, type cannot be inferred
-                        raise ValueError(f"Cannot infer type of items in field: {name}. "
-                                         "Try using a parameterized type hint, or "
-                                         "specifying the type explicitly using "
-                                         "metadata['type']")
-
-            if field.default == field.default_factory == MISSING and not positional:
-                kwargs["required"] = True
-            else:
-                if field.default_factory != MISSING:
-                    kwargs["default"] = field.default_factory()
-                else:
-                    kwargs["default"] = field.default
-
-            if field.type is bool:
-                kwargs["action"] = "store_true"
-
-                for key in ("type", "required"):
-                    with suppress(KeyError):
-                        kwargs.pop(key)
-
-            self.add_argument(*args, **kwargs)
+        _add_dataclass_options(options_class, self)
 
     def parse_args(self, *args, **kwargs) -> OptionsType:
         """Parse arguments and return as the dataclass type."""
@@ -228,8 +253,16 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
         return self._options_type(**vars(namespace))
 
 
-def dataclass(cls=None, /, *, init=True, repr=True, eq=True, order=False,
-              unsafe_hash=False, frozen=False):
+def dataclass(
+    cls=None,
+    *,
+    init=True,
+    repr=True,
+    eq=True,
+    order=False,
+    unsafe_hash=False,
+    frozen=False,
+):
     def wrap(cls):
         cls = real_dataclass(
             cls,
