@@ -19,14 +19,16 @@ class NegativeTestHelper:
 
     def _on_exit(self, status: int):
         self.exit_status = status
+        raise RuntimeError("App Exited")
 
     def __enter__(self):
         self._sys_exit = sys.exit
         sys.exit = self._on_exit
         return self
 
-    def __exit__(self, *args, **kargs):
+    def __exit__(self, exc_type, exc_value, traceback):
         sys.exit = self._sys_exit
+        return exc_type is RuntimeError and str(exc_value) == "App Exited"
 
 
 class ArgumentParserTests(unittest.TestCase):
@@ -69,7 +71,7 @@ class ArgumentParserTests(unittest.TestCase):
 
         with NegativeTestHelper() as helper:
             ArgumentParser(Args).parse_args([])
-            self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+        self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
 
 
     def test_nargs(self): 
@@ -135,7 +137,7 @@ class ArgumentParserTests(unittest.TestCase):
 
         with NegativeTestHelper() as helper:
             ArgumentParser(Options).parse_args(["--small-integer", "20"])
-            self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+        self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
 
 
     def test_type(self):
