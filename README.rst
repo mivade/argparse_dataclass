@@ -25,6 +25,18 @@ are not yet implemented.
 
 Examples
 --------
+Using dataclass decorator
+
+.. code-block:: pycon
+
+    >>> from argparse_dataclass import dataclass
+    >>> @dataclass
+    ... class Options:
+    ...     x: int = 42
+    ...     y: bool = False
+    ...
+    >>> print(Options.parse_args(['--y']))
+    Options(x=42, y=True)
 
 A simple parser with flags:
 
@@ -90,12 +102,26 @@ Using different flag names and positional arguments:
     >>> print(parser.parse_args(["--long-name", 0, "positional"]))
     Options(x=0, positional='positional')
 
+Using a custom type converter:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     name: str = field(metadata=dict(type=str.title))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["--name", "john doe"]))
+    Options(name='John Doe')
+
 License
 -------
 
 MIT License
 
-Copyright (c) 2020 Michael V. DePalatis
+Copyright (c) 2021 Michael V. DePalatis and contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
