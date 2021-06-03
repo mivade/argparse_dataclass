@@ -150,11 +150,9 @@ class FunctionalParserTests(unittest.TestCase):
 
     @unittest.skipIf(sys.version_info[:2] == (3, 6), "Python 3.6 does not have datetime.fromisoformat()")
     def test_default_factory(self):
-        get_date = lambda: dt.datetime.now().isoformat()
-
         @dataclass
         class Parameters:
-            cutoff_date: dt.datetime = field(default_factory=get_date, metadata=dict(type=dt.datetime.fromisoformat))
+            cutoff_date: dt.datetime = field(default_factory=dt.datetime.now, metadata=dict(type=dt.datetime.fromisoformat))
 
         s_time  = dt.datetime.now()
         params = parse_args(Parameters, [])
@@ -173,7 +171,7 @@ class FunctionalParserTests(unittest.TestCase):
         self.assertEqual(params.cutoff_date, date)
 
 
-    def test_default_factory(self):
+    def test_default_factory_2(self):
         factory_calls = 0
         def factory_func():
             nonlocal factory_calls
