@@ -168,7 +168,8 @@ def parse_args(options_class: Type[OptionsType], *args, **kwargs) -> OptionsType
     parser = argparse.ArgumentParser()
     _add_dataclass_options(options_class, parser)
     namespace = parser.parse_args(*args, **kwargs)
-    return options_class(**vars(namespace))
+    kargs = {k: v for k, v in vars(namespace).items() if v != MISSING}
+    return options_class(**kargs)
 
 
 def _add_dataclass_options(
@@ -215,10 +216,7 @@ def _add_dataclass_options(
         if field.default == field.default_factory == MISSING and not positional:
             kwargs["required"] = True
         else:
-            if field.default_factory != MISSING:
-                kwargs["default"] = field.default_factory()
-            else:
-                kwargs["default"] = field.default
+            kwargs["default"] = MISSING
 
         if field.type is bool:
             kwargs["action"] = "store_true"
@@ -250,7 +248,8 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
     def parse_args(self, *args, **kwargs) -> OptionsType:
         """Parse arguments and return as the dataclass type."""
         namespace = super().parse_args(*args, **kwargs)
-        return self._options_type(**vars(namespace))
+        kargs = {k: v for k, v in vars(namespace).items() if v != MISSING}
+        return self._options_type(**kargs)
 
 
 def dataclass(

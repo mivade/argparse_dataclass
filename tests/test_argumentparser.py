@@ -147,6 +147,7 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Options).parse_args(["--name", "john doe"])
         self.assertEqual(params.name, "John Doe")
 
+
     @unittest.skipIf(sys.version_info[:2] == (3, 6), "Python 3.6 does not have datetime.fromisoformat()")
     def test_default_factory(self):
         get_date = lambda: dt.datetime.now().isoformat()
@@ -170,6 +171,30 @@ class ArgumentParserTests(unittest.TestCase):
         date = dt.datetime(2000, 1, 1)
         params = ArgumentParser(Parameters).parse_args(["--cutoff-date", date.isoformat()])
         self.assertEqual(params.cutoff_date, date)
+
+
+    def test_default_factory(self):
+        factory_calls = 0
+        def factory_func():
+            nonlocal factory_calls
+            factory_calls += 1
+            return f"Default Message: {factory_calls}"
+
+        @dataclass
+        class Parameters:
+            message: str = field(default_factory=factory_func)
+
+        params = ArgumentParser(Parameters).parse_args([])
+        self.assertEqual(params.message, "Default Message: 1")
+        self.assertEqual(factory_calls, 1)
+
+        params =ArgumentParser(Parameters).parse_args(["--message", "User message"])
+        self.assertEqual(params.message,  "User message")
+        self.assertEqual(factory_calls, 1)
+        
+        params = ArgumentParser(Parameters).parse_args([])
+        self.assertEqual(params.message, "Default Message: 2")
+        self.assertEqual(factory_calls, 2)
 
 if __name__ == "__main__":
     unittest.main()
