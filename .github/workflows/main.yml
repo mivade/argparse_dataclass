@@ -1,0 +1,36 @@
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events
+  push:
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        python:
+          - "3.6"
+          - "3.7"
+          - "3.8"
+          - "3.9"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install tox
+        run: |
+          pip3 --version
+          pip3 install setuptools tox
+
+      - name: Run tox
+        run: tox -e py
