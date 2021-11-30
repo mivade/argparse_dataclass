@@ -179,7 +179,7 @@ SOFTWARE.
 """
 import sys
 import argparse
-
+from functools import partial
 from dataclasses import (
     Field,
     is_dataclass,
@@ -353,11 +353,26 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
         self._options_type: Type[OptionsType] = options_class
         _add_dataclass_options(options_class, self)
 
+        # Init is finished, don't let the user modify the parser.
+        def lock(method_name: str):
+            setattr(self, method_name, partial(self._parser_locked, method_name))
+
+        lock("add_argument")
+        lock("add_argument_group")
+        lock("add_mutually_exclusive_group")
+        lock("add_subparsers")
+
     def parse_args(self, *args, **kwargs) -> OptionsType:
         """Parse arguments and return as the dataclass type."""
         namespace = super().parse_args(*args, **kwargs)
         kargs = {k: v for k, v in vars(namespace).items() if v != MISSING}
         return self._options_type(**kargs)
+
+    def _parser_locked(self, method_name: str, *args, **kwargs):
+        """Raises an error to let the user know that they can't modify the class."""
+        raise RuntimeError(
+            f"Can't call {method_name}, ArgumentParser can't be modified after initialization."
+        )
 
 
 def dataclass(
