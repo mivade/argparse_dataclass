@@ -116,6 +116,40 @@ Using a custom type converter:
     >>> print(parser.parse_args(["--name", "john doe"]))
     Options(name='John Doe')
 
+Configuring a flag to have a default value of True:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     verbose: bool = True
+    ...     logging: bool = field(default=True, metadata=dict(args=["--logging-off"]))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args([]))
+    Options(verbose=True, logging=True)
+    >>> print(parser.parse_args(["--no-verbose", "--logging-off"]))
+    Options(verbose=False, logging=False)
+
+
+Configuring a flag so it is required to set:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     logging: bool = field(metadata=dict(required=True))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["--logging"]))
+    Options(logging=True)
+    >>> print(parser.parse_args(["--no-logging"]))
+    Options(logging=False)
+
 License
 -------
 

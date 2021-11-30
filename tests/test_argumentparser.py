@@ -9,10 +9,11 @@ from argparse_dataclass import ArgumentParser
 
 
 class NegativeTestHelper:
-    ''' Helper to enable testing of negative test cases. 
-        On error parse_args() will call sys.exit(). 
-        this will hijack that call and log the status code.
-    '''
+    """Helper to enable testing of negative test cases.
+    On error parse_args() will call sys.exit().
+    this will hijack that call and log the status code.
+    """
+
     def __init__(self):
         self._sys_exit = None
         self.exit_status: int = None
@@ -37,6 +38,7 @@ class ArgumentParserTests(unittest.TestCase):
         class Opt:
             x: int = 42
             y: bool = False
+
         params = ArgumentParser(Opt).parse_args([])
         self.assertEqual(42, params.x)
         self.assertEqual(False, params.y)
@@ -44,15 +46,14 @@ class ArgumentParserTests(unittest.TestCase):
         self.assertEqual(10, params.x)
         self.assertEqual(True, params.y)
 
-    
     def test_basic_negative(self):
         class Opt:
             x: int = 42
             y: bool = False
+
         self.assertRaises(TypeError, ArgumentParser, Opt)
 
-        
-    def test_no_defaults(self): 
+    def test_no_defaults(self):
         @dataclass
         class Args:
             num_of_foo: int
@@ -61,7 +62,6 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Args).parse_args(["--num-of-foo=10", "--name", "Sam"])
         self.assertEqual(10, params.num_of_foo)
         self.assertEqual("Sam", params.name)
-
 
     def test_no_defaults_negative(self):
         @dataclass
@@ -73,19 +73,19 @@ class ArgumentParserTests(unittest.TestCase):
             ArgumentParser(Args).parse_args([])
         self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
 
-
-    def test_nargs(self): 
+    def test_nargs(self):
         @dataclass
         class Args:
             name: str
             friends: List[str] = field(metadata=dict(nargs=2))
 
-        params = ArgumentParser(Args).parse_args(["--name", "Sam", "--friends", "pippin", "Frodo"])
+        params = ArgumentParser(Args).parse_args(
+            ["--name", "Sam", "--friends", "pippin", "Frodo"]
+        )
         self.assertEqual("Sam", params.name)
-        self.assertEqual([ "pippin", "Frodo"], params.friends)
+        self.assertEqual(["pippin", "Frodo"], params.friends)
 
-
-    def test_nargs_plus(self): 
+    def test_nargs_plus(self):
         @dataclass
         class Args:
             name: str
@@ -95,21 +95,20 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Args).parse_args(args)
         self.assertEqual("Sam", params.name)
         self.assertEqual(["pippin", "Frodo"], params.friends)
-        
+
         args += ["Bilbo"]
         params = ArgumentParser(Args).parse_args(args)
         self.assertEqual("Sam", params.name)
         self.assertEqual(["pippin", "Frodo", "Bilbo"], params.friends)
-
 
     def test_nargs_negative(self):
         @dataclass
         class Args:
             name: str
             friends: list = field(metadata=dict(nargs=2))
+
         self.assertRaises(ValueError, ArgumentParser, Args)
 
-    
     def test_positional(self):
         @dataclass
         class Options:
@@ -120,7 +119,6 @@ class ArgumentParserTests(unittest.TestCase):
         self.assertEqual(params.x, 0)
         self.assertEqual(params.positional, "POS_VALUE")
 
-
     def test_choices(self):
         @dataclass
         class Options:
@@ -129,7 +127,6 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Options).parse_args(["--small-integer", "2"])
         self.assertEqual(params.small_integer, 2)
 
-        
     def test_choices_negative(self):
         @dataclass
         class Options:
@@ -139,40 +136,47 @@ class ArgumentParserTests(unittest.TestCase):
             ArgumentParser(Options).parse_args(["--small-integer", "20"])
         self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
 
-
     def test_type(self):
         @dataclass
         class Options:
             name: str = field(metadata=dict(type=str.title))
+
         params = ArgumentParser(Options).parse_args(["--name", "john doe"])
         self.assertEqual(params.name, "John Doe")
 
-
-    @unittest.skipIf(sys.version_info[:2] == (3, 6), "Python 3.6 does not have datetime.fromisoformat()")
+    @unittest.skipIf(
+        sys.version_info[:2] == (3, 6),
+        "Python 3.6 does not have datetime.fromisoformat()",
+    )
     def test_default_factory(self):
         @dataclass
         class Parameters:
-            cutoff_date: dt.datetime = field(default_factory=dt.datetime.now, metadata=dict(type=dt.datetime.fromisoformat))
+            cutoff_date: dt.datetime = field(
+                default_factory=dt.datetime.now,
+                metadata=dict(type=dt.datetime.fromisoformat),
+            )
 
-        s_time  = dt.datetime.now()
+        s_time = dt.datetime.now()
         params = ArgumentParser(Parameters).parse_args([])
-        e_time  = dt.datetime.now()
+        e_time = dt.datetime.now()
         self.assertGreaterEqual(params.cutoff_date, s_time)
         self.assertLessEqual(params.cutoff_date, e_time)
-        
-        s_time  = dt.datetime.now()
+
+        s_time = dt.datetime.now()
         params = ArgumentParser(Parameters).parse_args([])
-        e_time  = dt.datetime.now()
+        e_time = dt.datetime.now()
         self.assertGreaterEqual(params.cutoff_date, s_time)
         self.assertLessEqual(params.cutoff_date, e_time)
 
         date = dt.datetime(2000, 1, 1)
-        params = ArgumentParser(Parameters).parse_args(["--cutoff-date", date.isoformat()])
+        params = ArgumentParser(Parameters).parse_args(
+            ["--cutoff-date", date.isoformat()]
+        )
         self.assertEqual(params.cutoff_date, date)
-
 
     def test_default_factory_2(self):
         factory_calls = 0
+
         def factory_func():
             nonlocal factory_calls
             factory_calls += 1
@@ -186,16 +190,14 @@ class ArgumentParserTests(unittest.TestCase):
         self.assertEqual(params.message, "Default Message: 1")
         self.assertEqual(factory_calls, 1)
 
-        params =ArgumentParser(Parameters).parse_args(["--message", "User message"])
-        self.assertEqual(params.message,  "User message")
+        params = ArgumentParser(Parameters).parse_args(["--message", "User message"])
+        self.assertEqual(params.message, "User message")
         self.assertEqual(factory_calls, 1)
-        
+
         params = ArgumentParser(Parameters).parse_args([])
         self.assertEqual(params.message, "Default Message: 2")
         self.assertEqual(factory_calls, 2)
 
+
 if __name__ == "__main__":
     unittest.main()
-
-
-    
