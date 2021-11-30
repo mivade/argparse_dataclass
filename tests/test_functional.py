@@ -7,7 +7,6 @@ from typing import List
 
 from argparse_dataclass import parse_args
 
-
 class NegativeTestHelper:
     ''' Helper to enable testing of negative test cases. 
         On error parse_args() will call sys.exit(). 
@@ -31,7 +30,7 @@ class NegativeTestHelper:
         return exc_type is RuntimeError and str(exc_value) == "App Exited"
 
 
-class FunctionalParserTests(unittest.TestCase):
+class FunctionalParserTests(unittest.TestCase):    
     def test_basic(self):
         @dataclass
         class Opt:
@@ -52,6 +51,93 @@ class FunctionalParserTests(unittest.TestCase):
         self.assertRaises(TypeError, parse_args, Opt, [])
 
         
+    def test_bool_no_default(self):
+        @dataclass
+        class Opt:
+            verbose: bool
+            logging: bool 
+        params = parse_args(Opt, [])
+        self.assertEqual(False, params.verbose)
+        self.assertEqual(False, params.logging)
+        params = parse_args(Opt, ["--verbose", "--logging"])
+        self.assertEqual(True, params.verbose)
+        self.assertEqual(True, params.logging)
+    
+
+    def test_bool_default_false(self):
+        @dataclass
+        class Opt:
+            verbose: bool = False
+            logging: bool = False
+        params = parse_args(Opt, ["--verbose"])
+        self.assertEqual(True, params.verbose)
+        self.assertEqual(False, params.logging)
+        with NegativeTestHelper() as helper:
+            parse_args(Opt, ["--no-verbose"])
+        self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+
+
+    def test_bool_default_true(self):
+        @dataclass
+        class Opt:
+            verbose: bool = True
+            logging: bool = True
+        params = parse_args(Opt, [])
+        self.assertEqual(True, params.verbose)
+        self.assertEqual(True, params.logging)
+        params = parse_args(Opt, ["--no-verbose"])
+        self.assertEqual(False, params.verbose)
+        self.assertEqual(True, params.logging)
+        
+        with NegativeTestHelper() as helper:
+            parse_args(Opt, ["--verbose"])
+        self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+
+    
+    def test_bool_default_true_with_args(self):
+        @dataclass
+        class Opt:
+            verbose: bool = field(default=True, metadata={"args": ["--silent"]})
+            logging: bool = field(default=True, metadata={"args": ["--logging-off"]})
+        params = parse_args(Opt, [])
+        self.assertEqual(True, params.verbose)
+        self.assertEqual(True, params.logging)
+        params = parse_args(Opt, ["--silent"])
+        self.assertEqual(False, params.verbose)
+        self.assertEqual(True, params.logging)
+        params = parse_args(Opt, ["--logging-off"])
+        self.assertEqual(True, params.verbose)
+        self.assertEqual(False, params.logging)
+        params = parse_args(Opt, ["--silent", "--logging-off"])
+        self.assertEqual(False, params.verbose)
+        self.assertEqual(False, params.logging)
+
+
+    def test_bool_required(self):
+        @dataclass
+        class Opt:
+            verbose: bool = field(metadata={"required": True})
+            logging: bool = field(metadata={"args": ["--enable-logging"], "required": True})
+        with NegativeTestHelper() as helper:
+            parse_args(Opt, [])
+        self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+        params = parse_args(Opt, ["--verbose", "--enable-logging"])
+        self.assertEqual(True, params.verbose)
+        self.assertEqual(True, params.logging)
+        params = parse_args(Opt, ["--no-verbose", "--enable-logging"])
+        self.assertEqual(False, params.verbose)
+        self.assertEqual(True, params.logging)
+        params = parse_args(Opt, ["--verbose", "--no-enable-logging"])
+        self.assertEqual(True, params.verbose)
+        self.assertEqual(False, params.logging)
+        params = parse_args(Opt, ["--no-verbose", "--enable-logging"])
+        self.assertEqual(False, params.verbose)
+        self.assertEqual(True, params.logging)
+        params = parse_args(Opt, ["--no-verbose", "--no-enable-logging"])
+        self.assertEqual(False, params.verbose)
+        self.assertEqual(False, params.logging)
+
+
     def test_no_defaults(self): 
         @dataclass
         class Args:

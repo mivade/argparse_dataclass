@@ -117,6 +117,40 @@ Using a custom type converter:
     >>> print(parser.parse_args(["--name", "john doe"]))
     Options(name='John Doe')
 
+Configuring a flag to have a default value of True:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     verbose: bool = True
+    ...     logging: bool = field(default=True, metadata=dict(args=["--logging-off"]))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args([]))
+    Options(verbose=True, logging=True)
+    >>> print(parser.parse_args(["--no-verbose", "--logging-off"]))
+    Options(verbose=False, logging=False)
+
+
+Configuring a flag so it is required to set:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     logging: bool = field(metadata=dict(required=True))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["--logging"]))
+    Options(logging=True)
+    >>> print(parser.parse_args(["--no-logging"]))
+    Options(logging=False)
+
 License
 -------
 
@@ -145,8 +179,14 @@ SOFTWARE.
 """
 import sys
 import argparse
-from contextlib import suppress
-from dataclasses import is_dataclass, fields, MISSING, dataclass as real_dataclass
+
+from dataclasses import (
+    Field,
+    is_dataclass,
+    fields,
+    MISSING,
+    dataclass as real_dataclass,
+)
 from typing import TypeVar, Generic, Type
 
 if sys.version_info[1] >= 8:
@@ -158,7 +198,56 @@ else:
         return getattr(f, "__args__", tuple())
 
 
-__version__ = "0.2.1"
+if hasattr(argparse, "BooleanOptionalAction"):
+    # BooleanOptionalAction was added in Python 3.9
+    BooleanOptionalAction = argparse.BooleanOptionalAction
+else:
+    # backport of argparse.BooleanOptionalAction.
+    class BooleanOptionalAction(argparse.Action):
+        def __init__(
+            self,
+            option_strings,
+            dest,
+            default=None,
+            type=None,
+            choices=None,
+            required=False,
+            help=None,
+            metavar=None,
+        ):
+
+            _option_strings = []
+            for option_string in option_strings:
+                _option_strings.append(option_string)
+
+                if option_string.startswith("--"):
+                    option_string = "--no-" + option_string[2:]
+                    _option_strings.append(option_string)
+
+            if help is not None and default is not None:
+                help += f" (default: {default})"
+
+            super().__init__(
+                option_strings=_option_strings,
+                dest=dest,
+                nargs=0,
+                default=default,
+                type=type,
+                choices=choices,
+                required=required,
+                help=help,
+                metavar=metavar,
+            )
+
+        def __call__(self, parser, namespace, values, option_string=None):
+            if option_string in self.option_strings:
+                setattr(namespace, self.dest, not option_string.startswith("--no-"))
+
+        def format_usage(self):
+            return " | ".join(self.option_strings)
+
+
+__version__ = "0.2.2"
 
 OptionsType = TypeVar("OptionsType")
 
@@ -219,13 +308,32 @@ def _add_dataclass_options(
             kwargs["default"] = MISSING
 
         if field.type is bool:
-            kwargs["action"] = "store_true"
-
-            for key in ("type", "required"):
-                with suppress(KeyError):
-                    kwargs.pop(key)
-
+            _handle_bool_type(field, args, kwargs)
         parser.add_argument(*args, **kwargs)
+
+
+def _handle_bool_type(field: Field, args: list, kwargs: dict):
+    """Handles configuring the parser argument for boolean types.
+
+    Different field configurations:
+        No default value specified: action='store_true'
+        Default value set to True : action='store_true'
+        Default value set to False: action='store_false'
+            Add a 'no-' prefix to the name if no custom args specified.
+        if 'required' is specified: action=BooleanOptionalAction
+    """
+    kwargs["action"] = "store_true"
+    for key in ("type", "required"):
+        kwargs.pop(key, None)
+    if "default" in kwargs:
+        if field.default is True:
+            kwargs["action"] = "store_false"
+            if "args" not in field.metadata:
+                args[0] = f"--no-{field.name.replace('_', '-')}"
+                kwargs["dest"] = field.name
+    elif field.metadata.get("required") is True:
+        kwargs["action"] = BooleanOptionalAction
+        kwargs["required"] = True
 
 
 class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
