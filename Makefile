@@ -26,6 +26,7 @@ build: test readme
 .PHONY: black
 black:
 	black *.py
+	black tests/
 
 .PHONY: publish
 publish: clean readme build

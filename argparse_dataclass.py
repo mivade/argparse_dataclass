@@ -151,6 +151,21 @@ Configuring a flag so it is required to set:
     >>> print(parser.parse_args(["--no-logging"]))
     Options(logging=False)
 
+Parsing only the known arguments:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     name: str
+    ...     logging: bool = False
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_known_args(["--name", "John", "--other-arg", "foo"]))
+    (Options(name='John', logging=False), ['--other-arg', 'foo'])
+
 License
 -------
 
@@ -187,14 +202,14 @@ from dataclasses import (
     MISSING,
     dataclass as real_dataclass,
 )
-from typing import TypeVar, Generic, Type
+import typing as t
 
 if sys.version_info[1] >= 8:
     # get_args was added in Python 3.8
     from typing import get_args
 else:
 
-    def get_args(f: Type) -> tuple:
+    def get_args(f: t.Type) -> tuple:
         return getattr(f, "__args__", tuple())
 
 
@@ -247,22 +262,37 @@ else:
             return " | ".join(self.option_strings)
 
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
-OptionsType = TypeVar("OptionsType")
+OptionsType = t.TypeVar("OptionsType")
+ArgsType = t.Optional[t.Sequence[str]]
 
 
-def parse_args(options_class: Type[OptionsType], *args, **kwargs) -> OptionsType:
+def parse_args(
+    options_class: t.Type[OptionsType], args: ArgsType = None
+) -> OptionsType:
     """Parse arguments and return as the dataclass type."""
     parser = argparse.ArgumentParser()
     _add_dataclass_options(options_class, parser)
-    namespace = parser.parse_args(*args, **kwargs)
-    kargs = {k: v for k, v in vars(namespace).items() if v != MISSING}
-    return options_class(**kargs)
+    kwargs = _get_kwargs(parser.parse_args(args))
+    return options_class(**kwargs)
+
+
+def parse_known_args(
+    options_class: t.Type[OptionsType], args: ArgsType = None
+) -> t.Tuple[OptionsType, t.List[str]]:
+    """Parse known arguments and return tuple containing dataclass type
+    and list of remaining arguments.
+    """
+    parser = argparse.ArgumentParser()
+    _add_dataclass_options(options_class, parser)
+    namespace, others = parser.parse_known_args(args=args)
+    kwargs = _get_kwargs(namespace)
+    return options_class(**kwargs), others
 
 
 def _add_dataclass_options(
-    options_class: Type[OptionsType], parser: argparse.ArgumentParser
+    options_class: t.Type[OptionsType], parser: argparse.ArgumentParser
 ) -> None:
     if not is_dataclass(options_class):
         raise TypeError("cls must be a dataclass")
@@ -298,8 +328,7 @@ def _add_dataclass_options(
                     raise ValueError(
                         f"Cannot infer type of items in field: {field.name}. "
                         "Try using a parameterized type hint, or "
-                        "specifying the type explicitly using "
-                        "metadata['type']"
+                        "specifying the type explicitly using metadata['type']"
                     )
 
         if field.default == field.default_factory == MISSING and not positional:
@@ -310,6 +339,13 @@ def _add_dataclass_options(
         if field.type is bool:
             _handle_bool_type(field, args, kwargs)
         parser.add_argument(*args, **kwargs)
+
+
+def _get_kwargs(namespace: argparse.Namespace) -> t.Dict[str, t.Any]:
+    """Converts a Namespace to a dictionary containing the items that
+    to be used as keyword arguments to the Options class.
+    """
+    return {k: v for k, v in vars(namespace).items() if v != MISSING}
 
 
 def _handle_bool_type(field: Field, args: list, kwargs: dict):
@@ -336,7 +372,7 @@ def _handle_bool_type(field: Field, args: list, kwargs: dict):
         kwargs["required"] = True
 
 
-class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
+class ArgumentParser(argparse.ArgumentParser, t.Generic[OptionsType]):
     """Command line argument parser that derives its options from a dataclass.
 
     Parameters
@@ -348,16 +384,35 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
 
     """
 
-    def __init__(self, options_class: Type[OptionsType], *args, **kwargs):
+    def __init__(self, options_class: t.Type[OptionsType], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._options_type: Type[OptionsType] = options_class
+        self._options_type: t.Type[OptionsType] = options_class
         _add_dataclass_options(options_class, self)
 
-    def parse_args(self, *args, **kwargs) -> OptionsType:
+    def parse_args(self, args: ArgsType = None, namespace=None) -> OptionsType:
         """Parse arguments and return as the dataclass type."""
-        namespace = super().parse_args(*args, **kwargs)
-        kargs = {k: v for k, v in vars(namespace).items() if v != MISSING}
-        return self._options_type(**kargs)
+        if namespace is not None:
+            raise ValueError("supplying a namespace is not allowed")
+        kwargs = _get_kwargs(super().parse_args(args))
+        return self._options_type(**kwargs)
+
+    def parse_known_args(
+        self, args: ArgsType = None, namespace=None
+    ) -> t.Tuple[OptionsType, t.List[str]]:
+        """Parse known arguments and return tuple containing dataclass type
+        and list of remaining arguments.
+        """
+        if namespace is not None:
+            raise ValueError("supplying a namespace is not allowed")
+        namespace, others = super().parse_known_args(args=args)
+        kwargs = _get_kwargs(namespace)
+        return self._options_type(**kwargs), others
+
+    def _parser_locked(self, method_name: str, *args, **kwargs):
+        """Raises an error to let the user know that they can't modify the class."""
+        raise RuntimeError(
+            f"Can't call {method_name}, ArgumentParser can't be modified after initialization."
+        )
 
 
 def dataclass(

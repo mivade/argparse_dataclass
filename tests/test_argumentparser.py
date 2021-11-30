@@ -79,9 +79,8 @@ class ArgumentParserTests(unittest.TestCase):
             name: str
             friends: List[str] = field(metadata=dict(nargs=2))
 
-        params = ArgumentParser(Args).parse_args(
-            ["--name", "Sam", "--friends", "pippin", "Frodo"]
-        )
+        args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
+        params = ArgumentParser(Args).parse_args(args)
         self.assertEqual("Sam", params.name)
         self.assertEqual(["pippin", "Frodo"], params.friends)
 

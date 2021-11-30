@@ -150,6 +150,21 @@ Configuring a flag so it is required to set:
     >>> print(parser.parse_args(["--no-logging"]))
     Options(logging=False)
 
+Parsing only the known arguments:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     name: str
+    ...     logging: bool = False
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_known_args(["--name", "John", "--other-arg", "foo"]))
+    (Options(name='John', logging=False), ['--other-arg', 'foo'])
+
 License
 -------
 
