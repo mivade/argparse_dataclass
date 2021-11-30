@@ -408,12 +408,6 @@ class ArgumentParser(argparse.ArgumentParser, t.Generic[OptionsType]):
         kwargs = _get_kwargs(namespace)
         return self._options_type(**kwargs), others
 
-    def _parser_locked(self, method_name: str, *args, **kwargs):
-        """Raises an error to let the user know that they can't modify the class."""
-        raise RuntimeError(
-            f"Can't call {method_name}, ArgumentParser can't be modified after initialization."
-        )
-
 
 def dataclass(
     cls=None,
