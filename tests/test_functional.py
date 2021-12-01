@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 from typing import List
 
-from argparse_dataclass import parse_args
+from argparse_dataclass import parse_args, parse_known_args
 
 
 class NegativeTestHelper:
@@ -168,7 +168,8 @@ class FunctionalParserTests(unittest.TestCase):
             name: str
             friends: List[str] = field(metadata=dict(nargs=2))
 
-        params = parse_args(Args, ["--name", "Sam", "--friends", "pippin", "Frodo"])
+        args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
+        params = parse_args(Args, args)
         self.assertEqual("Sam", params.name)
         self.assertEqual(["pippin", "Frodo"], params.friends)
 
@@ -194,12 +195,8 @@ class FunctionalParserTests(unittest.TestCase):
             name: str
             friends: list = field(metadata=dict(nargs=2))
 
-        self.assertRaises(
-            ValueError,
-            parse_args,
-            Args,
-            ["--name", "Sam", "--friends", "pippin", "Frodo"],
-        )
+        args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
+        self.assertRaises(ValueError, parse_args, Args, args)
 
     def test_positional(self):
         @dataclass
@@ -287,6 +284,25 @@ class FunctionalParserTests(unittest.TestCase):
         params = parse_args(Parameters, [])
         self.assertEqual(params.message, "Default Message: 2")
         self.assertEqual(factory_calls, 2)
+
+    def test_parse_known_args(self):
+        @dataclass
+        class Options:
+            name: str
+
+        with NegativeTestHelper() as helper:
+            parse_known_args(Options, [])
+        self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+
+        args = ["--name", "John Doe"]
+        params, others = parse_known_args(Options, args)
+        self.assertEqual(params.name, "John Doe")
+        self.assertEqual(others, [])
+
+        args = ["--name", "John Doe", "--cat", "hat"]
+        params, others = parse_known_args(Options, args)
+        self.assertEqual(params.name, "John Doe")
+        self.assertEqual(others, ["--cat", "hat"])
 
 
 if __name__ == "__main__":
