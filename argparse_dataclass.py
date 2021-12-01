@@ -194,6 +194,7 @@ SOFTWARE.
 """
 import sys
 import argparse
+import typing
 
 from dataclasses import (
     Field,
@@ -202,14 +203,13 @@ from dataclasses import (
     MISSING,
     dataclass as real_dataclass,
 )
-import typing as t
 
 if sys.version_info[1] >= 8:
     # get_args was added in Python 3.8
     from typing import get_args
 else:
 
-    def get_args(f: t.Type) -> tuple:
+    def get_args(f: typing.Type) -> tuple:
         return getattr(f, "__args__", tuple())
 
 
@@ -264,12 +264,12 @@ else:
 
 __version__ = "0.2.3"
 
-OptionsType = t.TypeVar("OptionsType")
-ArgsType = t.Optional[t.Sequence[str]]
+OptionsType = typing.TypeVar("OptionsType")
+ArgsType = typing.Optional[typing.Sequence[str]]
 
 
 def parse_args(
-    options_class: t.Type[OptionsType], args: ArgsType = None
+    options_class: typing.Type[OptionsType], args: ArgsType = None
 ) -> OptionsType:
     """Parse arguments and return as the dataclass type."""
     parser = argparse.ArgumentParser()
@@ -279,8 +279,8 @@ def parse_args(
 
 
 def parse_known_args(
-    options_class: t.Type[OptionsType], args: ArgsType = None
-) -> t.Tuple[OptionsType, t.List[str]]:
+    options_class: typing.Type[OptionsType], args: ArgsType = None
+) -> typing.Tuple[OptionsType, typing.List[str]]:
     """Parse known arguments and return tuple containing dataclass type
     and list of remaining arguments.
     """
@@ -292,7 +292,7 @@ def parse_known_args(
 
 
 def _add_dataclass_options(
-    options_class: t.Type[OptionsType], parser: argparse.ArgumentParser
+    options_class: typing.Type[OptionsType], parser: argparse.ArgumentParser
 ) -> None:
     if not is_dataclass(options_class):
         raise TypeError("cls must be a dataclass")
@@ -341,7 +341,7 @@ def _add_dataclass_options(
         parser.add_argument(*args, **kwargs)
 
 
-def _get_kwargs(namespace: argparse.Namespace) -> t.Dict[str, t.Any]:
+def _get_kwargs(namespace: argparse.Namespace) -> typing.Dict[str, typing.Any]:
     """Converts a Namespace to a dictionary containing the items that
     to be used as keyword arguments to the Options class.
     """
@@ -372,7 +372,7 @@ def _handle_bool_type(field: Field, args: list, kwargs: dict):
         kwargs["required"] = True
 
 
-class ArgumentParser(argparse.ArgumentParser, t.Generic[OptionsType]):
+class ArgumentParser(argparse.ArgumentParser, typing.Generic[OptionsType]):
     """Command line argument parser that derives its options from a dataclass.
 
     Parameters
@@ -384,9 +384,9 @@ class ArgumentParser(argparse.ArgumentParser, t.Generic[OptionsType]):
 
     """
 
-    def __init__(self, options_class: t.Type[OptionsType], *args, **kwargs):
+    def __init__(self, options_class: typing.Type[OptionsType], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._options_type: t.Type[OptionsType] = options_class
+        self._options_type: typing.Type[OptionsType] = options_class
         _add_dataclass_options(options_class, self)
 
     def parse_args(self, args: ArgsType = None, namespace=None) -> OptionsType:
@@ -398,7 +398,7 @@ class ArgumentParser(argparse.ArgumentParser, t.Generic[OptionsType]):
 
     def parse_known_args(
         self, args: ArgsType = None, namespace=None
-    ) -> t.Tuple[OptionsType, t.List[str]]:
+    ) -> typing.Tuple[OptionsType, typing.List[str]]:
         """Parse known arguments and return tuple containing dataclass type
         and list of remaining arguments.
         """
