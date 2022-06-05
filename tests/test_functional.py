@@ -320,5 +320,6 @@ class FunctionalParserTests(unittest.TestCase):
         self.assertEqual(params.name, "John Doe")
         self.assertEqual(params.age, 3)
 
+
 if __name__ == "__main__":
     unittest.main()

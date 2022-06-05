@@ -4,7 +4,6 @@ import datetime as dt
 from dataclasses import dataclass, field
 
 from typing import List, Optional
-\
 from argparse_dataclass import ArgumentParser
 
 
@@ -212,6 +211,7 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Options).parse_args(args)
         self.assertEqual(params.name, "John Doe")
         self.assertEqual(params.age, 3)
+
 
 if __name__ == "__main__":
     unittest.main()

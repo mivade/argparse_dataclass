@@ -211,7 +211,7 @@ else:
 
     def get_args(f: typing.Type) -> tuple:
         return getattr(f, "__args__", tuple())
-    
+
     def get_origin(f: typing.Type) -> typing.Any:
         return getattr(f, "__origin__", None)
 
