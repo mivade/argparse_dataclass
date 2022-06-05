@@ -206,11 +206,14 @@ from dataclasses import (
 
 if sys.version_info[1] >= 8:
     # get_args was added in Python 3.8
-    from typing import get_args
+    from typing import get_args, get_origin
 else:
 
     def get_args(f: typing.Type) -> tuple:
         return getattr(f, "__args__", tuple())
+    
+    def get_origin(f: typing.Type) -> typing.Any:
+        return getattr(f, "__origin__", None)
 
 
 if hasattr(argparse, "BooleanOptionalAction"):
@@ -262,7 +265,7 @@ else:
             return " | ".join(self.option_strings)
 
 
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 OptionsType = typing.TypeVar("OptionsType")
 ArgsType = typing.Optional[typing.Sequence[str]]
@@ -338,6 +341,11 @@ def _add_dataclass_options(
 
         if field.type is bool:
             _handle_bool_type(field, args, kwargs)
+        elif get_origin(field.type) is typing.Union:
+            # Optional[X] is equivalent to Union[X, None].
+            f_args = get_args(field.type)
+            if len(f_args) == 2 and f_args[1] is type(None):
+                kwargs["type"] = f_args[0]
         parser.add_argument(*args, **kwargs)
 
 
