@@ -165,6 +165,25 @@ Parsing only the known arguments:
     >>> print(parser.parse_known_args(["--name", "John", "--other-arg", "foo"]))
     (Options(name='John', logging=False), ['--other-arg', 'foo'])
 
+
+Configuring a field with the Optional generic type:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from typing import Optional
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     name: str
+    ...     id: Optional[int] = None
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["--name", "John"]))
+    Options(name='John', id=None)
+    >>> print(parser.parse_args(["--name", "John", "--id", "1234"]))
+    Options(name='John', id=1234)
+
 License
 -------
 
