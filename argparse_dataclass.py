@@ -166,6 +166,25 @@ Parsing only the known arguments:
     >>> print(parser.parse_known_args(["--name", "John", "--other-arg", "foo"]))
     (Options(name='John', logging=False), ['--other-arg', 'foo'])
 
+
+Configuring a field with the Optional generic type:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from typing import Optional
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     name: str
+    ...     id: Optional[int] = None
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> print(parser.parse_args(["--name", "John"]))
+    Options(name='John', id=None)
+    >>> print(parser.parse_args(["--name", "John", "--id", "1234"]))
+    Options(name='John', id=1234)
+
 License
 -------
 
@@ -205,7 +224,7 @@ from dataclasses import (
 )
 
 if sys.version_info[1] >= 8:
-    # get_args was added in Python 3.8
+    # get_args & get_origin were added in Python 3.8
     from typing import get_args, get_origin
 else:
 
@@ -264,6 +283,9 @@ else:
         def format_usage(self):
             return " | ".join(self.option_strings)
 
+
+# In Python 3.10, we can use types.NoneType
+NoneType = type(None)
 
 __version__ = "0.2.4"
 
@@ -344,8 +366,11 @@ def _add_dataclass_options(
         elif get_origin(field.type) is typing.Union:
             # Optional[X] is equivalent to Union[X, None].
             f_args = get_args(field.type)
-            if len(f_args) == 2 and f_args[1] is type(None):
-                kwargs["type"] = f_args[0]
+            if len(f_args) == 2 and NoneType in f_args:
+                arg = next(a for a in f_args if a is not NoneType)
+                kwargs["type"] = arg
+            else:
+                raise TypeError("Union types other than 'Optional' are not supported")
         parser.add_argument(*args, **kwargs)
 
 

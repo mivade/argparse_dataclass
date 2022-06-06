@@ -3,7 +3,7 @@ import unittest
 import datetime as dt
 from dataclasses import dataclass, field
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from argparse_dataclass import parse_args, parse_known_args
 
@@ -309,6 +309,22 @@ class FunctionalParserTests(unittest.TestCase):
         class Options:
             name: str
             age: Optional[int] = None
+
+        args = ["--name", "John Doe"]
+        params = parse_args(Options, args)
+        self.assertEqual(params.name, "John Doe")
+        self.assertEqual(params.age, None)
+
+        args = ["--name", "John Doe", "--age", "3"]
+        params = parse_args(Options, args)
+        self.assertEqual(params.name, "John Doe")
+        self.assertEqual(params.age, 3)
+
+    def test_optional_union_args(self):
+        @dataclass
+        class Options:
+            name: str
+            age: Union[None, int] = None
 
         args = ["--name", "John Doe"]
         params = parse_args(Options, args)
