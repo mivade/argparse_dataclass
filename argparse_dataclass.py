@@ -369,7 +369,8 @@ def _add_dataclass_options(
             if len(f_args) == 2 and NoneType in f_args:
                 arg = next(a for a in f_args if a is not NoneType)
                 kwargs["type"] = arg
-
+            else:
+                raise TypeError("Union types other than 'Optional' are not supported")
         parser.add_argument(*args, **kwargs)
 
 
