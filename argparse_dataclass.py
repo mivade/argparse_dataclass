@@ -364,13 +364,14 @@ def _add_dataclass_options(
         if field.type is bool:
             _handle_bool_type(field, args, kwargs)
         elif get_origin(field.type) is typing.Union:
-            # Optional[X] is equivalent to Union[X, None].
-            f_args = get_args(field.type)
-            if len(f_args) == 2 and NoneType in f_args:
-                arg = next(a for a in f_args if a is not NoneType)
-                kwargs["type"] = arg
-            else:
-                raise TypeError("Union types other than 'Optional' are not supported")
+            if field.metadata.get("type") is None:
+                # Optional[X] is equivalent to Union[X, None].
+                f_args = get_args(field.type)
+                if len(f_args) == 2 and NoneType in f_args:
+                    arg = next(a for a in f_args if a is not NoneType)
+                    kwargs["type"] = arg
+                else:
+                    raise TypeError("Union types other than 'Optional' are not supported")
         parser.add_argument(*args, **kwargs)
 
 
