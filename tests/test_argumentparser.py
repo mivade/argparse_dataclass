@@ -254,7 +254,7 @@ class ArgumentParserTests(unittest.TestCase):
             int_or_str: Union[int, str]
 
         args = ["--int-or-str", "John Doe"]
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(TypeError):
             ArgumentParser(Options).parse_args(args)
 
 
