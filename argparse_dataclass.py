@@ -371,7 +371,8 @@ def _add_dataclass_options(
                     arg = next(a for a in f_args if a is not NoneType)
                     kwargs["type"] = arg
                 else:
-                    raise TypeError("Union types other than 'Optional' are not supported")
+                    raise TypeError("For Union types other than 'Optional', a custom 'type' must be specified using "
+                                    "'metadata'.")
         parser.add_argument(*args, **kwargs)
 
 
