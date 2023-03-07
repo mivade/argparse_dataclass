@@ -252,7 +252,6 @@ else:
             help=None,
             metavar=None,
         ):
-
             _option_strings = []
             for option_string in option_strings:
                 _option_strings.append(option_string)
@@ -371,8 +370,10 @@ def _add_dataclass_options(
                     arg = next(a for a in f_args if a is not NoneType)
                     kwargs["type"] = arg
                 else:
-                    raise TypeError("For Union types other than 'Optional', a custom 'type' must be specified using "
-                                    "'metadata'.")
+                    raise TypeError(
+                        "For Union types other than 'Optional', a custom 'type' must be specified using "
+                        "'metadata'."
+                    )
         parser.add_argument(*args, **kwargs)
 
 
