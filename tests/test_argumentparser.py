@@ -228,6 +228,34 @@ class ArgumentParserTests(unittest.TestCase):
         self.assertEqual(params.name, "John Doe")
         self.assertEqual(params.age, 3)
 
+    def test_union_args(self):
+        def parse_int_or_str(value):
+            try:
+                return int(value)
+            except ValueError:
+                return value
+
+        @dataclass
+        class Options:
+            int_or_str: Union[int, str] = field(metadata=dict(type=parse_int_or_str))
+
+        args = ["--int-or-str", "John Doe"]
+        params = ArgumentParser(Options).parse_args(args)
+        self.assertEqual(params.int_or_str, "John Doe")
+
+        args = ["--int-or-str", "42"]
+        params = ArgumentParser(Options).parse_args(args)
+        self.assertEqual(params.int_or_str, 42)
+
+    def test_union_args_raises_without_custom_type(self):
+        @dataclass
+        class Options:
+            int_or_str: Union[int, str]
+
+        args = ["--int-or-str", "John Doe"]
+        with self.assertRaises(TypeError):
+            ArgumentParser(Options).parse_args(args)
+
 
 if __name__ == "__main__":
     unittest.main()
