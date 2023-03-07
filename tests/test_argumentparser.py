@@ -229,7 +229,6 @@ class ArgumentParserTests(unittest.TestCase):
         self.assertEqual(params.age, 3)
 
     def test_union_args(self):
-
         def parse_int_or_str(value):
             try:
                 return int(value)
