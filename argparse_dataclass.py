@@ -337,6 +337,9 @@ def _add_dataclass_options(
         if field.metadata.get("choices") is not None:
             kwargs["choices"] = field.metadata["choices"]
 
+        if field.metadata.get("metavar") is not None:
+            kwargs["metavar"] = field.metadata["metavar"]
+
         if field.metadata.get("nargs") is not None:
             kwargs["nargs"] = field.metadata["nargs"]
             if field.metadata.get("type") is None:
