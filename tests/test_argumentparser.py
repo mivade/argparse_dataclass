@@ -293,5 +293,15 @@ class ArgumentParserTests(unittest.TestCase):
 
         self.assertRaises(ValueError, lambda: ArgumentParser(Options))
 
+    def test_literal_choices_collision(self):
+        """Test case for the Literal type: do not allow choices in the metadata when the field type is Literal."""
+
+        # Provide a Literal type combined with choices in the meta field
+        @dataclass
+        class Options:
+            a_or_3: Literal["a", "b"] = field(metadata={'choices' : ["a", "b"]})
+
+        self.assertRaises(ValueError, lambda: ArgumentParser(Options))
+
 if __name__ == "__main__":
     unittest.main()

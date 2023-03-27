@@ -338,7 +338,15 @@ def _add_dataclass_options(
             kwargs["choices"] = field.metadata["choices"]
 
         # Support Literal types as an alternative means of specifying choices.
-        elif typing.get_origin(field.type) is typing.Literal:
+        if typing.get_origin(field.type) is typing.Literal:
+
+            # Prohibit a potential collision with the choices field
+            if field.metadata.get("choices") is not None:
+                raise ValueError(
+                        f"Cannot infer type of items in field: {field.name}. "
+                        "Literal type arguments should not be combined with choices in the metadata. "
+                        "Remove the redundant choices field from the metadata."
+                )
 
             # Get the types of the arguments of the Literal
             types = [type(arg) for arg in typing.get_args(field.type)]
