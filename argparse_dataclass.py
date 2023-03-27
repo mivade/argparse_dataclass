@@ -343,9 +343,9 @@ def _add_dataclass_options(
             # Prohibit a potential collision with the choices field
             if field.metadata.get("choices") is not None:
                 raise ValueError(
-                        f"Cannot infer type of items in field: {field.name}. "
-                        "Literal type arguments should not be combined with choices in the metadata. "
-                        "Remove the redundant choices field from the metadata."
+                    f"Cannot infer type of items in field: {field.name}. "
+                    "Literal type arguments should not be combined with choices in the metadata. "
+                    "Remove the redundant choices field from the metadata."
                 )
 
             # Get the types of the arguments of the Literal
@@ -354,11 +354,13 @@ def _add_dataclass_options(
             # Make sure just a single type has been used
             if len(set(types)) > 1:
                 raise ValueError(
-                        f"Cannot infer type of items in field: {field.name}. "
-                        "Literal type arguments should contain choices of a single type. "
-                        f"Instead, {len(set(types))} types where found: "+ ", ".join([type_.__name__ for type_ in set(types)]) + "."
+                    f"Cannot infer type of items in field: {field.name}. "
+                    "Literal type arguments should contain choices of a single type. "
+                    f"Instead, {len(set(types))} types where found: "
+                    + ", ".join([type_.__name__ for type_ in set(types)])
+                    + "."
                 )
-            
+
             # Overwrite the type kwarg
             kwargs["type"] = types[0]
             # Use the literal arguments as choices

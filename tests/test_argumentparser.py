@@ -256,14 +256,13 @@ class ArgumentParserTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             ArgumentParser(Options).parse_args(args)
 
-
     def test_literal(self):
         """Test case for basic usage of a Literal type for providing choices."""
 
         @dataclass
         class Options:
             a_or_b: Literal["a", "b"]
-        
+
         # Provide a valid argument
         args = ["--a-or-b", "a"]
         params = ArgumentParser(Options).parse_args(args)
@@ -275,7 +274,7 @@ class ArgumentParserTests(unittest.TestCase):
         @dataclass
         class Options:
             a_or_b: Literal["a", "b"]
-        
+
         # Provide an invalid argument
         args = ["--a-or-b", "c"]
         with NegativeTestHelper() as helper:
@@ -299,9 +298,10 @@ class ArgumentParserTests(unittest.TestCase):
         # Provide a Literal type combined with choices in the meta field
         @dataclass
         class Options:
-            a_or_3: Literal["a", "b"] = field(metadata={'choices' : ["a", "b"]})
+            a_or_3: Literal["a", "b"] = field(metadata={"choices": ["a", "b"]})
 
         self.assertRaises(ValueError, lambda: ArgumentParser(Options))
+
 
 if __name__ == "__main__":
     unittest.main()

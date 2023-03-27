@@ -7,7 +7,7 @@ from typing import Literal
 class Opt:
     x: int = 42
     y: bool = False
-    z: Literal['a', 'b'] = 'a'
+    z: Literal["a", "b"] = "a"
 
 
 def main():
