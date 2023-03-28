@@ -340,7 +340,6 @@ def _add_dataclass_options(
 
         # Support Literal types as an alternative means of specifying choices.
         if typing.get_origin(field.type) is typing.Literal:
-
             # Prohibit a potential collision with the choices field
             if field.metadata.get("choices") is not None:
                 raise ValueError(
