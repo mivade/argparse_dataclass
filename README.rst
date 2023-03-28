@@ -77,9 +77,10 @@ Enabling choices for an option:
 
     >>> from dataclasses import dataclass, field
     >>> from argparse_dataclass import ArgumentParser
+    >>> from typing import Literal
     >>> @dataclass
     ... class Options:
-    ...     small_integer: int = field(metadata=dict(choices=[1, 2, 3]))
+    ...     small_integer: Literal[1,2,3]
     ...
     >>> parser = ArgumentParser(Options)
     >>> print(parser.parse_args(["--small-integer", "3"]))

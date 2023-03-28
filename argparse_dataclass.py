@@ -78,9 +78,10 @@ Enabling choices for an option:
 
     >>> from dataclasses import dataclass, field
     >>> from argparse_dataclass import ArgumentParser
+    >>> from typing import Literal
     >>> @dataclass
     ... class Options:
-    ...     small_integer: int = field(metadata=dict(choices=[1, 2, 3]))
+    ...     small_integer: Literal[1, 2, 3]
     ...
     >>> parser = ArgumentParser(Options)
     >>> print(parser.parse_args(["--small-integer", "3"]))
@@ -336,6 +337,34 @@ def _add_dataclass_options(
 
         if field.metadata.get("choices") is not None:
             kwargs["choices"] = field.metadata["choices"]
+
+        # Support Literal types as an alternative means of specifying choices.
+        if typing.get_origin(field.type) is typing.Literal:
+            # Prohibit a potential collision with the choices field
+            if field.metadata.get("choices") is not None:
+                raise ValueError(
+                    f"Cannot infer type of items in field: {field.name}. "
+                    "Literal type arguments should not be combined with choices in the metadata. "
+                    "Remove the redundant choices field from the metadata."
+                )
+
+            # Get the types of the arguments of the Literal
+            types = [type(arg) for arg in typing.get_args(field.type)]
+
+            # Make sure just a single type has been used
+            if len(set(types)) > 1:
+                raise ValueError(
+                    f"Cannot infer type of items in field: {field.name}. "
+                    "Literal type arguments should contain choices of a single type. "
+                    f"Instead, {len(set(types))} types where found: "
+                    + ", ".join([type_.__name__ for type_ in set(types)])
+                    + "."
+                )
+
+            # Overwrite the type kwarg
+            kwargs["type"] = types[0]
+            # Use the literal arguments as choices
+            kwargs["choices"] = typing.get_args(field.type)
 
         if field.metadata.get("metavar") is not None:
             kwargs["metavar"] = field.metadata["metavar"]

@@ -3,7 +3,7 @@ import unittest
 import datetime as dt
 from dataclasses import dataclass, field
 
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Literal
 from argparse_dataclass import ArgumentParser
 
 
@@ -255,6 +255,52 @@ class ArgumentParserTests(unittest.TestCase):
         args = ["--int-or-str", "John Doe"]
         with self.assertRaises(TypeError):
             ArgumentParser(Options).parse_args(args)
+
+    def test_literal(self):
+        """Test case for basic usage of a Literal type for providing choices."""
+
+        @dataclass
+        class Options:
+            a_or_b: Literal["a", "b"]
+
+        # Provide a valid argument
+        args = ["--a-or-b", "a"]
+        params = ArgumentParser(Options).parse_args(args)
+        self.assertEqual(params.a_or_b, "a")
+
+    def test_literal_invalid_argument(self):
+        """Test case for the Literal type: show that incorrect arguments fail on parsing."""
+
+        @dataclass
+        class Options:
+            a_or_b: Literal["a", "b"]
+
+        # Provide an invalid argument
+        args = ["--a-or-b", "c"]
+        with NegativeTestHelper() as helper:
+            ArgumentParser(Options).parse_args(args)
+
+        self.assertIsNotNone(helper.exit_status, "Expected an error while parsing")
+
+    def test_literal_mixed_types(self):
+        """Test case for the Literal type: show that using a Literal with mixed arguments is rejected with a ValueError."""
+
+        # Provide a Literal type with mixed argument types
+        @dataclass
+        class Options:
+            a_or_3: Literal["a", 3]
+
+        self.assertRaises(ValueError, lambda: ArgumentParser(Options))
+
+    def test_literal_choices_collision(self):
+        """Test case for the Literal type: do not allow choices in the metadata when the field type is Literal."""
+
+        # Provide a Literal type combined with choices in the meta field
+        @dataclass
+        class Options:
+            a_or_3: Literal["a", "b"] = field(metadata={"choices": ["a", "b"]})
+
+        self.assertRaises(ValueError, lambda: ArgumentParser(Options))
 
 
 if __name__ == "__main__":
