@@ -17,3 +17,4 @@ This is the 1.0 release of `argparse_dataclass`.
 * @jcal-15
 * @mivade
 * @rafi-cohen
++ @frank113
