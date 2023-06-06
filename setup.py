@@ -21,15 +21,12 @@ setup(
     include_package_data=True,
     description="Declarative CLIs with argparse and dataclasses",
     long_description=get_readme(),
-    python_requires=">=3.6",
-    install_requires=[
-        "dataclasses; python_version == '3.6'",
-    ],
+    python_requires=">=3.7",
+    install_requires=[],
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
