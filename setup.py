@@ -22,7 +22,6 @@ setup(
     description="Declarative CLIs with argparse and dataclasses",
     long_description=get_readme(),
     python_requires=">=3.8",
-    install_requires=[],
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
