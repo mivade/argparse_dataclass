@@ -316,6 +316,20 @@ def parse_known_args(
     return options_class(**kwargs), others
 
 
+def _fields(options_class: typing.Type[OptionsType]) -> typing.Tuple[Field, ...]:
+    """Get tuple of Field for dataclass."""
+    type_hits = get_type_hints(options_class)
+
+    def _ensure_type(_f):
+        # When importing __future__.annotations, `Field.type` becomes `str`
+        # Ref: https://github.com/mivade/argparse_dataclass/issues/47
+        if isinstance(_f.type, str):
+            _f.type = type_hits[_f.name]
+        return _f
+
+    return tuple(_ensure_type(_f) for _f in fields(options_class))
+
+
 def _add_dataclass_options(
     options_class: typing.Type[OptionsType], parser: argparse.ArgumentParser
 ) -> None:
