@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "argparse_dataclass"
+version = "1.0.0"
+description = "Declarative CLIs with argparse and dataclasses"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Michael V. DePalatis", email = "mike@depalatis.net"}
+]
+readme = "README.rst"
+classifiers = [
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+]
+
+[project.urls]
+Homepage = "https://github.com/mivade/argparse_dataclass"
+
+[project.optional-dependencies]
+dev = ["black", "flake8", "tox", "pytest"]
+
