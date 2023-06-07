@@ -318,7 +318,7 @@ def parse_known_args(
 
 def _fields(options_class: typing.Type[OptionsType]) -> typing.Tuple[Field, ...]:
     """Get tuple of Field for dataclass."""
-    type_hints = get_type_hints(options_class)
+    type_hints = typing.get_type_hints(options_class)
 
     def _ensure_type(_f):
         # When importing __future__.annotations, `Field.type` becomes `str`
