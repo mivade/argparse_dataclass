@@ -212,10 +212,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 """
-import sys
 import argparse
-import typing
-
+from typing import (
+    TypeVar,
+    Optional,
+    Sequence,
+    Type,
+    Tuple,
+    List,
+    get_origin,
+    Literal,
+    get_args,
+    Union,
+    Dict,
+    Any,
+    Generic,
+)
 from dataclasses import (
     Field,
     is_dataclass,
@@ -223,18 +235,6 @@ from dataclasses import (
     MISSING,
     dataclass as real_dataclass,
 )
-
-if sys.version_info[1] >= 8:
-    # get_args & get_origin were added in Python 3.8
-    from typing import get_args, get_origin
-else:
-
-    def get_args(f: typing.Type) -> tuple:
-        return getattr(f, "__args__", tuple())
-
-    def get_origin(f: typing.Type) -> typing.Any:
-        return getattr(f, "__origin__", None)
-
 
 if hasattr(argparse, "BooleanOptionalAction"):
     # BooleanOptionalAction was added in Python 3.9
@@ -287,15 +287,13 @@ else:
 # In Python 3.10, we can use types.NoneType
 NoneType = type(None)
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
-OptionsType = typing.TypeVar("OptionsType")
-ArgsType = typing.Optional[typing.Sequence[str]]
+OptionsType = TypeVar("OptionsType")
+ArgsType = Optional[Sequence[str]]
 
 
-def parse_args(
-    options_class: typing.Type[OptionsType], args: ArgsType = None
-) -> OptionsType:
+def parse_args(options_class: Type[OptionsType], args: ArgsType = None) -> OptionsType:
     """Parse arguments and return as the dataclass type."""
     parser = argparse.ArgumentParser()
     _add_dataclass_options(options_class, parser)
@@ -304,8 +302,8 @@ def parse_args(
 
 
 def parse_known_args(
-    options_class: typing.Type[OptionsType], args: ArgsType = None
-) -> typing.Tuple[OptionsType, typing.List[str]]:
+    options_class: Type[OptionsType], args: ArgsType = None
+) -> Tuple[OptionsType, List[str]]:
     """Parse known arguments and return tuple containing dataclass type
     and list of remaining arguments.
     """
@@ -317,7 +315,7 @@ def parse_known_args(
 
 
 def _add_dataclass_options(
-    options_class: typing.Type[OptionsType], parser: argparse.ArgumentParser
+    options_class: Type[OptionsType], parser: argparse.ArgumentParser
 ) -> None:
     if not is_dataclass(options_class):
         raise TypeError("cls must be a dataclass")
@@ -339,7 +337,7 @@ def _add_dataclass_options(
             kwargs["choices"] = field.metadata["choices"]
 
         # Support Literal types as an alternative means of specifying choices.
-        if typing.get_origin(field.type) is typing.Literal:
+        if get_origin(field.type) is Literal:
             # Prohibit a potential collision with the choices field
             if field.metadata.get("choices") is not None:
                 raise ValueError(
@@ -349,7 +347,7 @@ def _add_dataclass_options(
                 )
 
             # Get the types of the arguments of the Literal
-            types = [type(arg) for arg in typing.get_args(field.type)]
+            types = [type(arg) for arg in get_args(field.type)]
 
             # Make sure just a single type has been used
             if len(set(types)) > 1:
@@ -364,7 +362,7 @@ def _add_dataclass_options(
             # Overwrite the type kwarg
             kwargs["type"] = types[0]
             # Use the literal arguments as choices
-            kwargs["choices"] = typing.get_args(field.type)
+            kwargs["choices"] = get_args(field.type)
 
         if field.metadata.get("metavar") is not None:
             kwargs["metavar"] = field.metadata["metavar"]
@@ -394,7 +392,7 @@ def _add_dataclass_options(
 
         if field.type is bool:
             _handle_bool_type(field, args, kwargs)
-        elif get_origin(field.type) is typing.Union:
+        elif get_origin(field.type) is Union:
             if field.metadata.get("type") is None:
                 # Optional[X] is equivalent to Union[X, None].
                 f_args = get_args(field.type)
@@ -409,7 +407,7 @@ def _add_dataclass_options(
         parser.add_argument(*args, **kwargs)
 
 
-def _get_kwargs(namespace: argparse.Namespace) -> typing.Dict[str, typing.Any]:
+def _get_kwargs(namespace: argparse.Namespace) -> Dict[str, Any]:
     """Converts a Namespace to a dictionary containing the items that
     to be used as keyword arguments to the Options class.
     """
@@ -440,7 +438,7 @@ def _handle_bool_type(field: Field, args: list, kwargs: dict):
         kwargs["required"] = True
 
 
-class ArgumentParser(argparse.ArgumentParser, typing.Generic[OptionsType]):
+class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
     """Command line argument parser that derives its options from a dataclass.
 
     Parameters
@@ -452,9 +450,9 @@ class ArgumentParser(argparse.ArgumentParser, typing.Generic[OptionsType]):
 
     """
 
-    def __init__(self, options_class: typing.Type[OptionsType], *args, **kwargs):
+    def __init__(self, options_class: Type[OptionsType], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._options_type: typing.Type[OptionsType] = options_class
+        self._options_type: Type[OptionsType] = options_class
         _add_dataclass_options(options_class, self)
 
     def parse_args(self, args: ArgsType = None, namespace=None) -> OptionsType:
@@ -466,7 +464,7 @@ class ArgumentParser(argparse.ArgumentParser, typing.Generic[OptionsType]):
 
     def parse_known_args(
         self, args: ArgsType = None, namespace=None
-    ) -> typing.Tuple[OptionsType, typing.List[str]]:
+    ) -> Tuple[OptionsType, List[str]]:
         """Parse known arguments and return tuple containing dataclass type
         and list of remaining arguments.
         """
