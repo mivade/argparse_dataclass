@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0-Unreleased]
 
-Support for both python 3.6 and 3.7 is removed.
++ Support for both python 3.6 and 3.7 is removed.
++ Add`TypeError` for non-`Optional` `Union` typing with prompt to use custom 
+  `type`
++ Add support for `metavar` in metadata
++ `Literal` types as an alternative for fixed-choice fields
++ Prevent `Literal` and `choices` from being specified at the same time
 
 ## [1.0.0] - 2023-01-21
 
