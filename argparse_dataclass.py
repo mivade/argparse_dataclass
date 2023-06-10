@@ -287,8 +287,6 @@ else:
 # In Python 3.10, we can use types.NoneType
 NoneType = type(None)
 
-__version__ = "2.0.0"
-
 OptionsType = TypeVar("OptionsType")
 ArgsType = Optional[Sequence[str]]
 
