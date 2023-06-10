@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "argparse_dataclass"
-version = "1.0.0"
+version = "2.0.1"
 description = "Declarative CLIs with argparse and dataclasses"
 license = {file = "LICENSE"}
 authors = [
@@ -15,8 +15,6 @@ classifiers = [
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
