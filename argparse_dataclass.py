@@ -4,9 +4,9 @@
 
 Declarative CLIs with ``argparse`` and ``dataclasses``.
 
-.. image:: https://travis-ci.org/mivade/argparse_dataclass.svg?branch=master
-    :target: https://travis-ci.org/mivade/argparse_dataclass
-
+.. image:: https://github.com/mivade/argparse_dataclass/actions/workflows/main.yml/badge.svg
+    :target: https://github.com/mivade/argparse_dataclass/actions
+    :alt: GitHub Actions status
 .. image:: https://img.shields.io/pypi/v/argparse_dataclass
     :alt: PyPI
 
