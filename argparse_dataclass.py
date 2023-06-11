@@ -186,6 +186,17 @@ Configuring a field with the Optional generic type:
     >>> print(parser.parse_args(["--name", "John", "--id", "1234"]))
     Options(name='John', id=1234)
 
+Contributors
+------------
+
+* @adsharma
+* @asasine
+* @frank113
+* @jayvdb
+* @jcal-15
+* @mivade
+* @rafi-cohen
+
 License
 -------
 
