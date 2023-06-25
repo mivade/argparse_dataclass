@@ -1,10 +1,7 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "argparse_dataclass"
 version = "2.0.1"
+requires-python = ">=3.8"
 description = "Declarative CLIs with argparse and dataclasses"
 license = {file = "LICENSE"}
 authors = [
@@ -25,5 +22,9 @@ classifiers = [
 Homepage = "https://github.com/mivade/argparse_dataclass"
 
 [project.optional-dependencies]
-dev = ["black", "flake8", "tox", "pytest"]
+dev = ["black", "flake8", "tox", "pytest", "build"]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 

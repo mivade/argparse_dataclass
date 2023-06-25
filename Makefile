@@ -20,8 +20,7 @@ test:
 .PHONY: build
 build: test readme
 	rm -rf dist build
-	python setup.py sdist
-	python setup.py bdist_wheel
+	python -m build
 
 .PHONY: black
 black:
