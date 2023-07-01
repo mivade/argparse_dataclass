@@ -248,8 +248,6 @@ from dataclasses import (
 )
 from importlib.metadata import version
 
-__version__ = version("argparse_dataclass")
-
 if hasattr(argparse, "BooleanOptionalAction"):
     # BooleanOptionalAction was added in Python 3.9
     BooleanOptionalAction = argparse.BooleanOptionalAction
@@ -303,6 +301,8 @@ NoneType = type(None)
 
 OptionsType = TypeVar("OptionsType")
 ArgsType = Optional[Sequence[str]]
+
+__version__ = version("argparse_dataclass")
 
 
 def parse_args(options_class: Type[OptionsType], args: ArgsType = None) -> OptionsType:
