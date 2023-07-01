@@ -246,6 +246,9 @@ from dataclasses import (
     MISSING,
     dataclass as real_dataclass,
 )
+from importlib.metadata import version
+
+__version__ = version("argparse_dataclass")
 
 if hasattr(argparse, "BooleanOptionalAction"):
     # BooleanOptionalAction was added in Python 3.9
