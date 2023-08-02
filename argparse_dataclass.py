@@ -428,7 +428,7 @@ def _add_dataclass_options(
                     group = parser.add_argument_group(title=_group)
             elif isinstance(_group, dict):
                 _group_title = _group.get("title")
-                if _group_title in title_group_map:
+                if _group_title is not None and _group_title in title_group_map:
                     group = title_group_map.get(_group_title)
                 else:
                     _group_descr = _group.get("description")
