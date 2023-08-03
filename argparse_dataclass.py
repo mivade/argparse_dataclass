@@ -418,28 +418,7 @@ def _add_dataclass_options(
                     )
 
         if "group" in field.metadata:
-            title_group_map = {x.title: x for x in parser._action_groups}
-
-            _group = field.metadata.get("group")
-            if isinstance(_group, str):
-                if _group in title_group_map:
-                    group = title_group_map.get(_group)
-                else:
-                    group = parser.add_argument_group(title=_group)
-            elif isinstance(_group, dict):
-                _group_title = _group.get("title")
-                if _group_title is not None and _group_title in title_group_map:
-                    group = title_group_map.get(_group_title)
-                else:
-                    _group_descr = _group.get("description")
-                    group = parser.add_argument_group(
-                        title=_group_title, description=_group_descr
-                    )
-            else:
-                raise TypeError(
-                    "'group' must be a group title or dictionary."
-                )
-            group.add_argument(*args, **kwargs)
+            _handle_argument_group(parser, field, args, kwargs)
         else:
             parser.add_argument(*args, **kwargs)
 
@@ -473,6 +452,26 @@ def _handle_bool_type(field: Field, args: list, kwargs: dict):
     elif field.metadata.get("required") is True:
         kwargs["action"] = BooleanOptionalAction
         kwargs["required"] = True
+
+
+def _handle_argument_group(
+    parser: argparse.ArgumentParser, field: Field, args: list, kwargs: dict
+) -> None:
+    """Handles adding the argument to an argument group."""
+    groups = {x.title: x for x in parser._action_groups}
+    group = field.metadata.get("group")
+    if isinstance(group, str):
+        title = group
+        description = None
+    elif isinstance(group, dict):
+        title = group.get("title")
+        description = group.get("description")
+    else:
+        raise TypeError("'group' must be a group title or dictionary")
+    group = groups.get(title)
+    if title is None or group is None:
+        group = parser.add_argument_group(title, description)
+    group.add_argument(*args, **kwargs)
 
 
 class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
