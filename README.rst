@@ -185,6 +185,35 @@ Configuring a field with the Optional generic type:
     >>> print(parser.parse_args(["--name", "John", "--id", "1234"]))
     Options(name='John', id=1234)
 
+
+Creating argument groups by group title:
+
+.. code-block:: pycon
+
+    >>> from dataclasses import dataclass, field
+    >>> from argparse_dataclass import ArgumentParser
+    >>> @dataclass
+    ... class Options:
+    ...     foo: str
+    ...     bar: int = field(metadata=dict(group="group"))
+    ...     baz: int = field(metadata=dict(group=dict(title="title", description="description")))
+    ...
+    >>> parser = ArgumentParser(Options)
+    >>> parser.print_help()
+    usage: [-h] --foo FOO --bar BAR --baz BAZ
+
+    options:
+    -h, --help  show this help message and exit
+    --foo FOO
+
+    group:
+    --bar BAR
+
+    title:
+    description
+
+    --baz BAZ
+
 Contributors
 ------------
 
