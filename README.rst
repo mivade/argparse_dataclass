@@ -194,9 +194,9 @@ Creating argument groups by group title:
     >>> from argparse_dataclass import ArgumentParser
     >>> @dataclass
     ... class Options:
-    ...     foo: str
-    ...     bar: int = field(metadata=dict(group="group"))
-    ...     baz: int = field(metadata=dict(group=dict(title="title", description="description")))
+    ...     foo = field(metadata=dict(group="string group"))
+    ...     bar = field(metadata=dict(group=dict(title="dict group", description="using a dict")))
+    ...     baz = field(metadata=dict(group=("sequence group", "using a sequence")))
     ...
     >>> parser = ArgumentParser(Options)
     >>> parser.print_help()
@@ -204,13 +204,17 @@ Creating argument groups by group title:
 
     options:
     -h, --help  show this help message and exit
+
+    string group:
     --foo FOO
 
-    group:
+    dict group:
+    using a dict
+
     --bar BAR
 
-    title:
-    description
+    sequence group:
+    using a sequence
 
     --baz BAZ
 

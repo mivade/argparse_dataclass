@@ -466,8 +466,12 @@ def _handle_argument_group(
     elif isinstance(group, dict):
         title = group.get("title")
         description = group.get("description")
+    elif isinstance(group, Sequence):
+        len_ = len(group)
+        title = group[0] if len_ > 0 else None
+        description = group[1] if len_ > 1 else None
     else:
-        raise TypeError("'group' must be a group title or dictionary")
+        raise TypeError("'group' must be a group title, dictionary, or sequence")
     group = groups.get(title)
     if title is None or group is None:
         group = parser.add_argument_group(title, description)
