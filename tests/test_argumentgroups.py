@@ -21,14 +21,16 @@ class ArgumentParserGroupsTests(unittest.TestCase):
         self.assertEqual(expected, out)
 
     def test_basic_dict(self):
+        title = "title"
+
         parser = argparse.ArgumentParser()
-        group = parser.add_argument_group("group")
+        group = parser.add_argument_group(title)
         group.add_argument("--x", required=True, type=int)
         expected = parser.format_help()
 
         @dataclass
         class Opt:
-            x: int = field(metadata={"group": "group"})
+            x: int = field(metadata={"group": {"title": title}})
 
         parser = ArgumentParser(Opt)
         out = parser.format_help()
@@ -36,7 +38,7 @@ class ArgumentParserGroupsTests(unittest.TestCase):
         self.assertEqual(expected, out)
 
     def test_basic_dict_description(self):
-        title = "group"
+        title = "title"
         description = "description"
 
         parser = argparse.ArgumentParser()
