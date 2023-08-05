@@ -416,7 +416,11 @@ def _add_dataclass_options(
                         "For Union types other than 'Optional', a custom 'type' must be specified using "
                         "'metadata'."
                     )
-        parser.add_argument(*args, **kwargs)
+
+        if "group" in field.metadata:
+            _handle_argument_group(parser, field, args, kwargs)
+        else:
+            parser.add_argument(*args, **kwargs)
 
 
 def _get_kwargs(namespace: argparse.Namespace) -> Dict[str, Any]:
@@ -448,6 +452,30 @@ def _handle_bool_type(field: Field, args: list, kwargs: dict):
     elif field.metadata.get("required") is True:
         kwargs["action"] = BooleanOptionalAction
         kwargs["required"] = True
+
+
+def _handle_argument_group(
+    parser: argparse.ArgumentParser, field: Field, args: list, kwargs: dict
+) -> None:
+    """Handles adding the argument to an argument group."""
+    groups = {x.title: x for x in parser._action_groups}
+    group = field.metadata.get("group")
+    if isinstance(group, str):
+        title = group
+        description = None
+    elif isinstance(group, dict):
+        title = group.get("title")
+        description = group.get("description")
+    elif isinstance(group, Sequence):
+        len_ = len(group)
+        title = group[0] if len_ > 0 else None
+        description = group[1] if len_ > 1 else None
+    else:
+        raise TypeError("'group' must be a group title, dictionary, or sequence")
+    group = groups.get(title)
+    if title is None or group is None:
+        group = parser.add_argument_group(title, description)
+    group.add_argument(*args, **kwargs)
 
 
 class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
