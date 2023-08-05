@@ -167,7 +167,9 @@ class ArgumentParserGroupsTests(unittest.TestCase):
         class Opt:
             arga1: int = field(metadata={"group": title_a})
             arga2: int = field(metadata={"group": title_a})
-            argb: int = field(metadata={"group": {"title": title_b, "description": descr_b}})
+            argb: int = field(
+                metadata={"group": {"title": title_b, "description": descr_b}}
+            )
             argc: int = field(metadata={"group": (title_c, descr_c)})
             argd: int = field(metadata={"group": ()})
             arge: int = field(metadata={"group": ()})
