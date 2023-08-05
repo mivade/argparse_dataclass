@@ -1,6 +1,8 @@
-from dataclasses import dataclass, field
-import unittest
 import argparse
+from dataclasses import dataclass, field
+
+import unittest
+
 from argparse_dataclass import ArgumentParser
 
 
