@@ -224,6 +224,7 @@ SOFTWARE.
 
 """
 import argparse
+from collections import namedtuple
 from typing import (
     TypeVar,
     Optional,
@@ -326,14 +327,12 @@ def parse_known_args(
     return options_class(**kwargs), others
 
 
-def field_to_argument_args(field: Field[Any]) -> List[str]:
-    """Extract args of ArgumentParser.add_argument from a dataclass field."""
-    return field.metadata.get("args", [f"--{field.name.replace('_', '-')}"])
+def field_to_argument_args(field: Field[Any]) -> Tuple[List[str], Dict[str, Any]]:
+    """Extract kwargs of ArgumentParser.add_argument from a dataclass field.
 
-
-def field_to_argument_kwargs(field: Field[Any]) -> Dict[str, Any]:
-    """Extract kwargs of ArgumentParser.add_argument from a dataclass field."""
-    args = field_to_argument_args(field)
+    Returns pair of (args, kwargs) to be passed to ArgumentParser.add_argument.
+    """
+    args = field.metadata.get("args", [f"--{field.name.replace('_', '-')}"])
     positional = not args[0].startswith("-")
     kwargs = {
         "type": field.metadata.get("type", field.type),
@@ -417,7 +416,7 @@ def field_to_argument_kwargs(field: Field[Any]) -> Dict[str, Any]:
                     "'metadata'."
                 )
 
-    return kwargs
+    return args, kwargs
 
 
 def add_dataclass_options(
@@ -428,8 +427,7 @@ def add_dataclass_options(
         raise TypeError("cls must be a dataclass")
 
     for field in fields(options_class):
-        args = field_to_argument_args(field)
-        kwargs = field_to_argument_kwargs(field)
+        args, kwargs = field_to_argument_args(field)
 
         if "group" in field.metadata:
             _handle_argument_group(parser, field, args, kwargs)
