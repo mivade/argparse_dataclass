@@ -326,12 +326,14 @@ def parse_known_args(
     return options_class(**kwargs), others
 
 
-def get_field_args(field: Field[Any]) -> List[str]:
+def field_to_argument_args(field: Field[Any]) -> List[str]:
+    """Extract args of ArgumentParser.add_argument from a dataclass field."""
     return field.metadata.get("args", [f"--{field.name.replace('_', '-')}"])
 
 
-def get_field_kwargs(field: Field[Any]) -> Dict[str, Any]:
-    args = get_field_args(field)
+def field_to_argument_kwargs(field: Field[Any]) -> Dict[str, Any]:
+    """Extract kwargs of ArgumentParser.add_argument from a dataclass field."""
+    args = field_to_argument_args(field)
     positional = not args[0].startswith("-")
     kwargs = {
         "type": field.metadata.get("type", field.type),
@@ -421,12 +423,13 @@ def get_field_kwargs(field: Field[Any]) -> Dict[str, Any]:
 def add_dataclass_options(
     options_class: Type[OptionsType], parser: argparse.ArgumentParser
 ) -> None:
+    """Adds options given as dataclass fields to the parser."""
     if not is_dataclass(options_class):
         raise TypeError("cls must be a dataclass")
 
     for field in fields(options_class):
-        args = get_field_args(field)
-        kwargs = get_field_kwargs(field)
+        args = field_to_argument_args(field)
+        kwargs = field_to_argument_kwargs(field)
 
         if "group" in field.metadata:
             _handle_argument_group(parser, field, args, kwargs)
