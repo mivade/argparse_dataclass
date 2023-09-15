@@ -327,7 +327,7 @@ def parse_known_args(
     return options_class(**kwargs), others
 
 
-def field_to_argument_args(field: Field[Any]) -> Tuple[List[str], Dict[str, Any]]:
+def extract_argparse_kwargs(field: Field[Any]) -> Tuple[List[str], Dict[str, Any]]:
     """Extract kwargs of ArgumentParser.add_argument from a dataclass field.
 
     Returns pair of (args, kwargs) to be passed to ArgumentParser.add_argument.
@@ -427,7 +427,7 @@ def add_dataclass_options(
         raise TypeError("cls must be a dataclass")
 
     for field in fields(options_class):
-        args, kwargs = field_to_argument_args(field)
+        args, kwargs = extract_argparse_kwargs(field)
 
         if "group" in field.metadata:
             _handle_argument_group(parser, field, args, kwargs)
