@@ -298,7 +298,7 @@ def parse_args(
 ) -> OptionsType:
     """Parse arguments and return as the dataclass type."""
     parser = argparse.ArgumentParser()
-    _add_dataclass_options(options_class, parser)
+    add_dataclass_options(options_class, parser)
     kwargs = _get_kwargs(parser.parse_args(args))
     return options_class(**kwargs)
 
@@ -310,13 +310,13 @@ def parse_known_args(
     and list of remaining arguments.
     """
     parser = argparse.ArgumentParser()
-    _add_dataclass_options(options_class, parser)
+    add_dataclass_options(options_class, parser)
     namespace, others = parser.parse_known_args(args=args)
     kwargs = _get_kwargs(namespace)
     return options_class(**kwargs), others
 
 
-def _add_dataclass_options(
+def add_dataclass_options(
     options_class: typing.Type[OptionsType], parser: argparse.ArgumentParser
 ) -> None:
     if not is_dataclass(options_class):
@@ -420,7 +420,7 @@ class ArgumentParser(argparse.ArgumentParser, typing.Generic[OptionsType]):
     def __init__(self, options_class: typing.Type[OptionsType], *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._options_type: typing.Type[OptionsType] = options_class
-        _add_dataclass_options(options_class, self)
+        add_dataclass_options(options_class, self)
 
     def parse_args(self, args: ArgsType = None, namespace=None) -> OptionsType:
         """Parse arguments and return as the dataclass type."""
