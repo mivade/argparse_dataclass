@@ -1,3 +1,4 @@
+import argparse
 import sys
 import unittest
 import datetime as dt
@@ -5,7 +6,7 @@ from dataclasses import dataclass, field
 
 from typing import List, Optional, Union
 
-from argparse_dataclass import parse_args, parse_known_args
+from argparse_dataclass import add_dataclass_options, parse_args, parse_known_args
 
 
 class NegativeTestHelper:
@@ -59,8 +60,9 @@ class FunctionalParserTests(unittest.TestCase):
             x: int = 42
             y: bool = False
         argpument_parser = argparse.ArgumentParser()
-        add_dataclass_options(argpument_parser, Opt)
-        params = argpument_parser.parse_args()
+        add_dataclass_options(Opt, argpument_parser)
+        params = argpument_parser.parse_args([])
+        print(params)
         self.assertEqual(42, params.x)
         self.assertEqual(False, params.y)
         params = params = argpument_parser.parse_args(["--x=10", "--y"])
