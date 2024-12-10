@@ -142,10 +142,6 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Options).parse_args(["--name", "john doe"])
         self.assertEqual(params.name, "John Doe")
 
-    @unittest.skipIf(
-        sys.version_info[:2] == (3, 6),
-        "Python 3.6 does not have datetime.fromisoformat()",
-    )
     def test_default_factory(self):
         @dataclass
         class Parameters:
@@ -301,6 +297,16 @@ class ArgumentParserTests(unittest.TestCase):
             a_or_3: Literal["a", "b"] = field(metadata={"choices": ["a", "b"]})
 
         self.assertRaises(ValueError, lambda: ArgumentParser(Options))
+
+    def test_keep_underscores(self):
+        @dataclass
+        class Args:
+            num_of_foo: int = field(metadata={"keep_underscores": True})
+            is_fun: bool = field(default=True, metadata={"keep_underscores": True})
+
+        params = ArgumentParser(Args).parse_args(["--num_of_foo=10", "--no-is_fun"])
+        self.assertEqual(10, params.num_of_foo)
+        self.assertFalse(params.is_fun)
 
 
 if __name__ == "__main__":
