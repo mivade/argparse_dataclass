@@ -334,7 +334,7 @@ def _add_dataclass_options(
         raise TypeError("cls must be a dataclass")
 
     for field in fields(options_class):
-        args = field.metadata.get("args", [f"--{field.name.replace('_', '-')}"])
+        args = field.metadata.get("args", [f"--{_get_arg_name(field)}"])
         positional = not args[0].startswith("-")
         kwargs = {
             "type": field.metadata.get("type", field.type),
@@ -448,7 +448,7 @@ def _handle_bool_type(field: Field, args: list, kwargs: dict):
         if field.default is True:
             kwargs["action"] = "store_false"
             if "args" not in field.metadata:
-                args[0] = f"--no-{field.name.replace('_', '-')}"
+                args[0] = f"--no-{_get_arg_name(field)}"
                 kwargs["dest"] = field.name
     elif field.metadata.get("required") is True:
         kwargs["action"] = BooleanOptionalAction
@@ -477,6 +477,12 @@ def _handle_argument_group(
     if title is None or group is None:
         group = parser.add_argument_group(title, description)
     group.add_argument(*args, **kwargs)
+
+
+def _get_arg_name(field: Field):
+    if field.metadata.get("keep_underscores", False):
+        return field.name
+    return field.name.replace("_", "-")
 
 
 class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
