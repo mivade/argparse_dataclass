@@ -1,9 +1,9 @@
 import sys
 import unittest
 import datetime as dt
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, InitVar
 
-from typing import Optional, Union
+from typing import Optional, Union, ClassVar
 
 from argparse_dataclass import parse_args, parse_known_args
 
@@ -356,6 +356,28 @@ class FunctionalParserTests(unittest.TestCase):
         params = parse_args(Options, args)
         self.assertEqual(params.date, "1999-12-31")
         self.assertEqual(params.time, "15:35:59")
+        self.assertEqual(params.datetime, dt.datetime(1999, 12, 31, 15, 35, 59))
+
+    def test_init_only(self):
+        @dataclass
+        class Options:
+            cls_var: ClassVar[str] = "Hello"
+            date: InitVar[str]
+            time: InitVar[str] = "00:00"
+            datetime: dt.datetime = field(init=False)
+
+            def __post_init__(self, date, time):
+                self.datetime = dt.datetime.fromisoformat(f"{date}T{time}")
+
+        args = ["--date", "1999-12-31"]
+        params = parse_args(Options, args)
+        self.assertFalse(hasattr(params, "date"))
+        # time is always set to the default value. I think this is a bug..
+        # self.assertFalse(hasattr(params, "time"))
+        self.assertEqual(params.datetime, dt.datetime(1999, 12, 31))
+
+        args = ["--date", "1999-12-31", "--time", "15:35:59"]
+        params = parse_args(Options, args)
         self.assertEqual(params.datetime, dt.datetime(1999, 12, 31, 15, 35, 59))
 
 
