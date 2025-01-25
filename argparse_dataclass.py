@@ -400,6 +400,8 @@ def _add_dataclass_options(
 
         if field.default == field.default_factory == MISSING and not positional:
             kwargs["required"] = True
+        elif field.default is not MISSING:
+            kwargs["default"] = field.default
         else:
             kwargs["default"] = MISSING
 
