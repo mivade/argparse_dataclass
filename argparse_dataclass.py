@@ -285,6 +285,9 @@ def _add_dataclass_options(
         raise TypeError("cls must be a dataclass")
 
     for field in fields(options_class):
+        if not field.init:
+            continue  # Ignore fields not in __init__
+
         args = field.metadata.get("args", [f"--{_get_arg_name(field)}"])
         positional = not args[0].startswith("-")
         kwargs = {

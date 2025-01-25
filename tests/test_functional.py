@@ -336,6 +336,28 @@ class FunctionalParserTests(unittest.TestCase):
         self.assertEqual(params.name, "John Doe")
         self.assertEqual(params.age, 3)
 
+    def test_init_false(self):
+        @dataclass
+        class Options:
+            date: str
+            time: str = "00:00"
+            datetime: dt.datetime = field(init=False)
+
+            def __post_init__(self):
+                self.datetime = dt.datetime.fromisoformat(f"{self.date}T{self.time}")
+
+        args = ["--date", "1999-12-31"]
+        params = parse_args(Options, args)
+        self.assertEqual(params.date, "1999-12-31")
+        self.assertEqual(params.time, "00:00")
+        self.assertEqual(params.datetime, dt.datetime(1999, 12, 31))
+
+        args = ["--date", "1999-12-31", "--time", "15:35:59"]
+        params = parse_args(Options, args)
+        self.assertEqual(params.date, "1999-12-31")
+        self.assertEqual(params.time, "15:35:59")
+        self.assertEqual(params.datetime, dt.datetime(1999, 12, 31, 15, 35, 59))
+
 
 if __name__ == "__main__":
     unittest.main()
