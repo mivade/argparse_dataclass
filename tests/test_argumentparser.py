@@ -3,7 +3,7 @@ import unittest
 import datetime as dt
 from dataclasses import dataclass, field
 
-from typing import List, Optional, Union, Literal
+from typing import Optional, Union, Literal
 from argparse_dataclass import ArgumentParser
 
 
@@ -76,7 +76,7 @@ class ArgumentParserTests(unittest.TestCase):
         @dataclass
         class Args:
             name: str
-            friends: List[str] = field(metadata=dict(nargs=2))
+            friends: list[str] = field(metadata=dict(nargs=2))
 
         args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
         params = ArgumentParser(Args).parse_args(args)
@@ -87,7 +87,7 @@ class ArgumentParserTests(unittest.TestCase):
         @dataclass
         class Args:
             name: str
-            friends: List[str] = field(metadata=dict(nargs="+"))
+            friends: list[str] = field(metadata=dict(nargs="+"))
 
         args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
         params = ArgumentParser(Args).parse_args(args)

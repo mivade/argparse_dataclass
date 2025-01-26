@@ -3,7 +3,7 @@ import unittest
 import datetime as dt
 from dataclasses import dataclass, field
 
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 from argparse_dataclass import parse_args, parse_known_args
 
@@ -166,7 +166,7 @@ class FunctionalParserTests(unittest.TestCase):
         @dataclass
         class Args:
             name: str
-            friends: List[str] = field(metadata=dict(nargs=2))
+            friends: list[str] = field(metadata=dict(nargs=2))
 
         args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
         params = parse_args(Args, args)
@@ -177,7 +177,7 @@ class FunctionalParserTests(unittest.TestCase):
         @dataclass
         class Args:
             name: str
-            friends: List[str] = field(metadata=dict(nargs="+"))
+            friends: list[str] = field(metadata=dict(nargs="+"))
 
         args = ["--name", "Sam", "--friends", "pippin", "Frodo"]
         params = parse_args(Args, args)

@@ -225,18 +225,17 @@ SOFTWARE.
 """
 
 import argparse
+from argparse import BooleanOptionalAction
 from typing import (
     TypeVar,
     Optional,
     Sequence,
     Type,
     Tuple,
-    List,
     get_origin,
     Literal,
     get_args,
     Union,
-    Dict,
     Any,
     Generic,
 )
@@ -248,54 +247,6 @@ from dataclasses import (
     dataclass as real_dataclass,
 )
 from importlib.metadata import version
-
-if hasattr(argparse, "BooleanOptionalAction"):
-    # BooleanOptionalAction was added in Python 3.9
-    BooleanOptionalAction = argparse.BooleanOptionalAction
-else:
-    # backport of argparse.BooleanOptionalAction.
-    class BooleanOptionalAction(argparse.Action):
-        def __init__(
-            self,
-            option_strings,
-            dest,
-            default=None,
-            type=None,
-            choices=None,
-            required=False,
-            help=None,
-            metavar=None,
-        ):
-            _option_strings = []
-            for option_string in option_strings:
-                _option_strings.append(option_string)
-
-                if option_string.startswith("--"):
-                    option_string = "--no-" + option_string[2:]
-                    _option_strings.append(option_string)
-
-            if help is not None and default is not None:
-                help += f" (default: {default})"
-
-            super().__init__(
-                option_strings=_option_strings,
-                dest=dest,
-                nargs=0,
-                default=default,
-                type=type,
-                choices=choices,
-                required=required,
-                help=help,
-                metavar=metavar,
-            )
-
-        def __call__(self, parser, namespace, values, option_string=None):
-            if option_string in self.option_strings:
-                setattr(namespace, self.dest, not option_string.startswith("--no-"))
-
-        def format_usage(self):
-            return " | ".join(self.option_strings)
-
 
 # In Python 3.10, we can use types.NoneType
 NoneType = type(None)
@@ -316,7 +267,7 @@ def parse_args(options_class: Type[OptionsType], args: ArgsType = None) -> Optio
 
 def parse_known_args(
     options_class: Type[OptionsType], args: ArgsType = None
-) -> Tuple[OptionsType, List[str]]:
+) -> Tuple[OptionsType, list[str]]:
     """Parse known arguments and return tuple containing dataclass type
     and list of remaining arguments.
     """
@@ -424,7 +375,7 @@ def _add_dataclass_options(
             parser.add_argument(*args, **kwargs)
 
 
-def _get_kwargs(namespace: argparse.Namespace) -> Dict[str, Any]:
+def _get_kwargs(namespace: argparse.Namespace) -> dict[str, Any]:
     """Converts a Namespace to a dictionary containing the items that
     to be used as keyword arguments to the Options class.
     """
@@ -511,7 +462,7 @@ class ArgumentParser(argparse.ArgumentParser, Generic[OptionsType]):
 
     def parse_known_args(
         self, args: ArgsType = None, namespace=None
-    ) -> Tuple[OptionsType, List[str]]:
+    ) -> Tuple[OptionsType, list[str]]:
         """Parse known arguments and return tuple containing dataclass type
         and list of remaining arguments.
         """
