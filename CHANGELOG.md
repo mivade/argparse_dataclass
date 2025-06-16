@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 + Updated project structure to use `pyproject.toml`
 + Add `build` to `dev` dependencies
++ Support `argparse.ArgumentDefaultsHelpFormatter` by properly initializing
+  argparse Action default.
++ Relax the guarantee that default_factory is called "exactly once per parse"
+  but still guarantee that default_factory is called "for each parse".
 
 ## [2.0.1] - Unreleased
 

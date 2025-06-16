@@ -71,6 +71,12 @@ Using defaults:
     >>> print(parser.parse_args([]))
     Options(x=1, y=2, z=3.14)
 
+Using ArgumentDefaultsHelpFormatter is supported. If a default_factory is used
+in the dataclass it will be called for a fresh result on each parse. The default
+value provided in --help is initialized at parser setup time.
+
+Implementation of default_factory with side-effects should not be used.
+
 Enabling choices for an option:
 
 .. code-block:: pycon

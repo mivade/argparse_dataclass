@@ -1,3 +1,4 @@
+from argparse import ArgumentDefaultsHelpFormatter
 import sys
 import unittest
 import datetime as dt
@@ -170,27 +171,31 @@ class ArgumentParserTests(unittest.TestCase):
 
     def test_default_factory_2(self):
         factory_calls = 0
+        factory_result = "0"
 
         def factory_func():
             nonlocal factory_calls
             factory_calls += 1
-            return f"Default Message: {factory_calls}"
+            return f"Default Message: {factory_result}"
 
         @dataclass
         class Parameters:
             message: str = field(default_factory=factory_func)
 
-        params = ArgumentParser(Parameters).parse_args([])
+        parser = ArgumentParser(Parameters)
+        factory_result = "1"
+        params = parser.parse_args([])
         self.assertEqual(params.message, "Default Message: 1")
-        self.assertEqual(factory_calls, 1)
+        self.assertGreaterEqual(factory_calls, 1)
 
-        params = ArgumentParser(Parameters).parse_args(["--message", "User message"])
+        params = parser.parse_args(["--message", "User message"])
         self.assertEqual(params.message, "User message")
-        self.assertEqual(factory_calls, 1)
+        self.assertGreaterEqual(factory_calls, 1)
 
-        params = ArgumentParser(Parameters).parse_args([])
+        factory_result = "2"
+        params = parser.parse_args([])
         self.assertEqual(params.message, "Default Message: 2")
-        self.assertEqual(factory_calls, 2)
+        self.assertGreaterEqual(factory_calls, 1)
 
     def test_optional_args(self):
         @dataclass
@@ -307,6 +312,22 @@ class ArgumentParserTests(unittest.TestCase):
         params = ArgumentParser(Args).parse_args(["--num_of_foo=10", "--no-is_fun"])
         self.assertEqual(10, params.num_of_foo)
         self.assertFalse(params.is_fun)
+
+    def test_default_help(self):
+        @dataclass
+        class Opt:
+            answer: int = field(
+                default=42,
+                metadata=dict(help="answer"),
+            )
+
+        """Test ArgumentsDefaultsHelpFormatter works as expected."""
+        parser = ArgumentParser(
+            Opt,
+            formatter_class=ArgumentDefaultsHelpFormatter,
+        )
+        help_message = parser.format_help()
+        assert "answer (default: 42)" in help_message
 
 
 if __name__ == "__main__":
