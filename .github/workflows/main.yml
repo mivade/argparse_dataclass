@@ -33,5 +33,8 @@ jobs:
           pip3 --version
           pip3 install setuptools tox
 
-      - name: Run tox
+      - name: Run pytest
         run: tox -e py
+
+      - name: Run flake8
+        run: tox -e flake8

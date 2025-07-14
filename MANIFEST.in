@@ -1,5 +1,4 @@
 include README.rst
 include LICENSE
-include requirements_dev.txt
 include tox.ini
 include Makefile

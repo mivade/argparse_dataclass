@@ -23,9 +23,15 @@ classifiers = [
 Homepage = "https://github.com/mivade/argparse_dataclass"
 
 [project.optional-dependencies]
-dev = ["black", "flake8", "tox", "pytest", "build"]
+dev = ["black", "flake8", "flake8-pyproject", "tox", "pytest", "build"]
 
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.flake8]
+# Recommended by black
+max-line-length = 88
+extend-ignore = [
+    "E501", # line too long, even for constants - incompatible with black
+]
